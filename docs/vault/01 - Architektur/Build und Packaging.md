@@ -43,7 +43,7 @@ npm run bump -- minor            # nur Version erhöhen: patch | minor | major
 3. Kein Snap (Mint blockiert snapd). Optional später eigenes APT-Repo.
 
 ## Icon
-Quelle `packaging/icon/certana.svg` (Urkunde mit Wachssiegel, Häkchen und Bändern; Farben Indigo/Creme/Bernstein/Türkis). Rendern ohne rsvg: Vordergrund via ImageMagick-MSVG, Verlauf separat (`gradient:` + Rundeck-Maske), komponiert zu `packaging/icon/certana-1024.png`; danach `npm run tauri icon packaging/icon/certana-1024.png` erzeugt `src-tauri/icons/` (PNG, ICNS, ICO, Store-Logos).
+Quelle `packaging/icon/certana.svg` (weisses Vorhängeschloss, rotes Schlüsselloch; Hintergrund Rot-Verlauf mit diagonaler Lichtkante, beides in ImageMagick, da MSVG weder Verläufe noch Transparenz rendert). Rendern ohne rsvg: Vordergrund via ImageMagick-MSVG, Verlauf separat (`gradient:` + Rundeck-Maske), komponiert zu `packaging/icon/certana-1024.png`; danach `npm run tauri icon packaging/icon/certana-1024.png` erzeugt `src-tauri/icons/` (PNG, ICNS, ICO, Store-Logos).
 
 ## Demo-Daten und Screenshots
 `CERTANA_DEMO_DIR=/pfad cargo test --manifest-path src-tauri/Cargo.toml --test demo_db` baut eine Demo-Datenbank (Passphrasen `demorootpassphrase2026` / `demoissuingpassphrase2026`). App dazu mit `HOME=<leer> CERTANA_DATA_DIR=/pfad target/release/certana` starten, damit die echte DB und der WebKit-Speicher unberührt bleiben. Screenshots liegen in `docs/screenshots/`. Achtung: Release-Binaries nur über `npm run tauri build -- --no-bundle` bauen, `cargo build --release` allein lädt die Dev-URL.
