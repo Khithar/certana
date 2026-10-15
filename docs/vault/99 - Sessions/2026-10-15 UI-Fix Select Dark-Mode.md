@@ -33,6 +33,10 @@ Nutzer will auf 1.0.0 und erstes Release. Ideenliste besprochen; umgesetzt wurde
 - Git-Remote `origin` → `https://github.com/Khithar/certana.git` gesetzt (noch nichts gepusht). RustRover: MCP-Server «rustrover» via Auto-Configure (global), `.mcp.json` in `.gitignore`; geteilte Run-Konfigurationen in `.run/` (Tauri dev, Cargo test, Cargo clippy, Frontend checks, Release .deb).
 - Stand: cargo test 23+1+2+2 grün, clippy sauber, tsc/eslint/vitest grün, i18n-Parität en/de geprüft.
 
+## Release 1.0.0 (gleiche Session)
+- Push nach GitHub über SSH (GitHub-Initialcommit per Merge eingebunden, `-X ours`).
+- `npm run bump -- major` → 1.0.0, CHANGELOG `[1.0.0] - 2026-10-15`, lokaler .deb-Build als Probe, Tag `v1.0.0` gepusht → `release.yml` baut deb/AppImage/rpm/NSIS und legt einen **Draft**-Release an, der manuell veröffentlicht wird. Signierung (Tauri/GPG) ist ohne Secrets übersprungen.
+
 ## Offen
 - Für 1.0.0 noch offen: Installationstest .deb und kompletter UI-Durchlauf unter Mint, eigenes Icon (Tauri-Platzhalter), Release-Workflow-Secrets (Tauri-Signing, GPG) anlegen oder Signierung für 1.0.0 entfernen, GPG-Fingerprint in README, CHANGELOG auf 1.0.0 datieren, `npm run bump -- major`.
 - Später: Tastaturbedienung/ARIA in Dialogen, Löschen widerrufener/abgelaufener Testzertifikate.

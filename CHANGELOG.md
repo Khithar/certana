@@ -4,6 +4,10 @@ All notable changes to Certana are documented here. Format follows Keep a Change
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-10-15
+
+First release: internal certificate authority for Linux desktops (.deb, AppImage, .rpm).
+
 ### Added
 - Project bootstrap: Tauri 2 + React scaffold, `certana-core` crate skeleton, Obsidian vault, GPL-3.0 license.
 - Core PKI (`certana-core`): key generation (ECDSA, Ed25519, RSA), root/intermediate CA creation, issuance profiles
