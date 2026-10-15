@@ -35,4 +35,4 @@ Certana ist eine native Linux-Desktop-Anwendung (Rust + Tauri 2) zum Betrieb ein
 | 6 | Zertifikats-Wizard, Verwaltung, Export, Renew | fertig |
 | 7 | Revocation, CRL, Dashboard, Benachrichtigung | fertig |
 | 8 | Packaging/CI (deb/AppImage/rpm gebaut, GitHub Actions, Flatpak-Manifest) | fertig bis auf Installationstest; manueller UI-Durchlauf laufend (Select-Dark-Mode-Fix 2026-10-15) |
-| 9 | Release 1.0.0 und 1.0.1 veröffentlicht (github.com/Khithar/certana); offen: Installationstest unter Mint, eigenes Icon, Release-Signierung, Windows-Durchlauf | fertig |
+| 9 | Release 1.0.0 und 1.0.1 veröffentlicht (github.com/Khithar/certana); Installationstest unter Mint bestanden, eigenes Icon; offen: Release-Signierung, Windows-Durchlauf | fertig |

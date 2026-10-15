@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#4f8ef7"/>
+      <stop offset="1" stop-color="#2457c5"/>
+    </linearGradient>
+  </defs>
+  <rect x="0" y="0" width="1024" height="1024" rx="224" ry="224" fill="url(#bg)"/>
+  <path d="M400,640 L372,900 L450,850 L512,920 L574,850 L652,900 L624,640 Z" fill="#dbe7ff"/>
+  <path d="M512,700 L512,920" stroke="#2457c5" stroke-opacity="0.25" stroke-width="14" fill="none"/>
+  <path d="M512.0,220.0 L541.0,249.9 L576.7,228.5 L597.0,264.9 L637.0,253.5 L647.1,293.9 L688.8,293.2 L688.1,334.9 L728.5,345.0 L717.1,385.0 L753.5,405.3 L732.1,441.0 L762.0,470.0 L732.1,499.0 L753.5,534.7 L717.1,555.0 L728.5,595.0 L688.1,605.1 L688.8,646.8 L647.1,646.1 L637.0,686.5 L597.0,675.1 L576.7,711.5 L541.0,690.1 L512.0,720.0 L483.0,690.1 L447.3,711.5 L427.0,675.1 L387.0,686.5 L376.9,646.1 L335.2,646.8 L335.9,605.1 L295.5,595.0 L306.9,555.0 L270.5,534.7 L291.9,499.0 L262.0,470.0 L291.9,441.0 L270.5,405.3 L306.9,385.0 L295.5,345.0 L335.9,334.9 L335.2,293.2 L376.9,293.9 L387.0,253.5 L427.0,264.9 L447.3,228.5 L483.0,249.9 Z" fill="#ffffff"/>
+  <circle cx="512" cy="470" r="178" fill="none" stroke="#2457c5" stroke-width="18"/>
+  <path d="M418,480 L488,548 L612,404" fill="none" stroke="#2457c5" stroke-width="46" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

@@ -45,8 +45,12 @@ Nutzer will auf 1.0.0 und erstes Release. Ideenliste besprochen; umgesetzt wurde
 ## Abschluss
 - **1.0.0** und **1.0.1** als GitHub-Releases veröffentlicht (deb, rpm, AppImage, Windows-Installer, SHA256SUMS): https://github.com/Khithar/certana/releases. README mit Screenshots, Installation, Quick start und Windows-Hinweis.
 
+## Icon und Installationstest (gleiche Session)
+- Nutzer hat das .deb unter Linux Mint installiert: funktioniert, Startmenü-Eintrag vorhanden.
+- Eigenes Icon: Siegel mit gezacktem Rand, Häkchen und Bändern auf blauem Verlauf (Primärfarbe der App). Quelle `packaging/icon/certana.svg`; da kein rsvg-convert vorhanden, Hintergrund per ImageMagick gerendert und mit dem Vordergrund komponiert (`certana-1024.png`). Icon-Satz via `npm run tauri icon packaging/icon/certana-1024.png` → `src-tauri/icons/`.
+
 ## Offen
-- Für 1.0.0 noch offen: Installationstest .deb und kompletter UI-Durchlauf unter Mint, eigenes Icon (Tauri-Platzhalter), Release-Workflow-Secrets (Tauri-Signing, GPG) anlegen oder Signierung für 1.0.0 entfernen, GPG-Fingerprint in README, CHANGELOG auf 1.0.0 datieren, `npm run bump -- major`.
+- Noch offen: Release-Signierung (GPG-Secret, Fingerprint in README), Windows-Durchlauf. Icon landet mit dem nächsten Release in den Paketen.
 - Später: Tastaturbedienung/ARIA in Dialogen, Löschen widerrufener/abgelaufener Testzertifikate.
 
 ## Geänderte Seiten

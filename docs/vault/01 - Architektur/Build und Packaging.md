@@ -42,6 +42,9 @@ npm run bump -- minor            # nur Version erhöhen: patch | minor | major
 2. **Flathub**: Manifest unter `packaging/flatpak/`, `org.gnome.Platform` ≥ 49.
 3. Kein Snap (Mint blockiert snapd). Optional später eigenes APT-Repo.
 
+## Icon
+Quelle `packaging/icon/certana.svg` (Siegel mit Häkchen). Rendern ohne rsvg: Vordergrund via ImageMagick-MSVG, Verlauf separat (`gradient:` + Rundeck-Maske), komponiert zu `packaging/icon/certana-1024.png`; danach `npm run tauri icon packaging/icon/certana-1024.png` erzeugt `src-tauri/icons/` (PNG, ICNS, ICO, Store-Logos).
+
 ## Demo-Daten und Screenshots
 `CERTANA_DEMO_DIR=/pfad cargo test --manifest-path src-tauri/Cargo.toml --test demo_db` baut eine Demo-Datenbank (Passphrasen `demorootpassphrase2026` / `demoissuingpassphrase2026`). App dazu mit `HOME=<leer> CERTANA_DATA_DIR=/pfad target/release/certana` starten, damit die echte DB und der WebKit-Speicher unberührt bleiben. Screenshots liegen in `docs/screenshots/`. Achtung: Release-Binaries nur über `npm run tauri build -- --no-bundle` bauen, `cargo build --release` allein lädt die Dev-URL.
 

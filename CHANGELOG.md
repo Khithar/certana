@@ -4,6 +4,9 @@ All notable changes to Certana are documented here. Format follows Keep a Change
 
 ## [Unreleased]
 
+### Added
+- Own application icon (certificate seal with check mark), source in `packaging/icon/certana.svg`.
+
 ## [1.0.1] - 2026-10-15
 
 ### Fixed
