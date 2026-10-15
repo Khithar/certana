@@ -5,12 +5,46 @@ create an offline root CA (or import one), operate an intermediate CA, issue ser
 Apache/nginx as well as client, S/MIME and code-signing certificates, manage renewals, revoke and
 publish CRLs, and keep an eye on expiry dates.
 
-- Built with Rust + Tauri 2, React and SQLite – ships as a small native binary (`.deb`, AppImage, Flatpak; Windows optional).
-- Private keys never leave the Rust process; the root key is stored only in an encrypted offline bundle.
-- Pure-Rust cryptography (rcgen, pkcs8, p12-keystore) – no OpenSSL dependency, OpenSSL-compatible files.
-- UI in English and German.
+- Built with Rust + Tauri 2, React and SQLite – ships as a small native binary (`.deb` ≈ 4.5 MiB, AppImage, `.rpm`; Windows installer experimental).
+- Private keys never leave the Rust process; the root key is stored only in an encrypted offline bundle, never in the database.
+- Pure-Rust cryptography (rcgen, pkcs8, p12-keystore) – no OpenSSL dependency, but every file stays OpenSSL-compatible
+  (`openssl verify`, `x509`, `pkey`, `pkcs12`, `crl` are part of the test suite).
+- Issuing CA keys are encrypted with a passphrase and unlocked per session with automatic idle lock; every action is audited.
+- Works with or without a CRL distribution point – for a purely internal CA you can simply leave it empty.
+- UI in English and German, light and dark theme.
 
-> Status: pre-release (0.1.0). Core PKI, persistence, commands and UI are implemented and tested; packaging is being finalised.
+## Installation
+
+Download the package for your distribution from the [Releases](https://github.com/Khithar/certana/releases) page.
+
+```sh
+# Debian / Ubuntu / Linux Mint
+sudo apt install ./Certana_1.0.0_amd64.deb      # pulls in libwebkit2gtk-4.1-0 and libgtk-3-0
+
+# Fedora / RHEL
+sudo dnf install ./Certana-1.0.0-1.x86_64.rpm
+
+# Any distribution
+chmod +x Certana_1.0.0_amd64.AppImage && ./Certana_1.0.0_amd64.AppImage
+```
+
+Certana appears in the start menu under *Utilities*. Data is stored in `~/.local/share/certana/certana.db`
+(configurable; a database on a network share switches to a shared mode with a writer lock).
+
+## Quick start
+
+1. **Create a root CA (ceremony)** – ideally offline. The root key is written only to an encrypted `*.certana-root`
+   bundle (keep it on a USB stick); the database stores just the certificate.
+2. **Create an issuing CA** – signed with the root bundle, its key is stored encrypted in the database and protected by
+   a passphrase you enter to unlock it for a session.
+3. **Issue certificates** via the wizard (server for Apache/nginx, client, S/MIME, code signing) – either let Certana
+   generate the key or paste a CSR from the server.
+4. **Export** – PEM certificate, chain and full chain, optionally DER, the unencrypted PKCS#8 key (0600) and PKCS#12,
+   together with ready-to-paste nginx/Apache snippets.
+5. **Distribute the root certificate** – the CA page shows the commands for Debian/Ubuntu, RHEL, Windows, macOS,
+   Firefox and Java.
+
+Renewal, revocation, CRL publication, expiry warnings and the audit log live in the respective pages.
 
 ## Building from source
 

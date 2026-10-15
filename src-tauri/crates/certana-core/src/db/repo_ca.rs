@@ -299,7 +299,10 @@ mod tests {
         assert_eq!(k.pkcs8_der(), ca_material.key.pkcs8_der());
 
         let certs = db
-            .list_certificates(&CertificateFilter { ca_id: Some(ca.id), ..Default::default() })
+            .list_certificates(&CertificateFilter {
+                ca_id: Some(ca.id),
+                ..Default::default()
+            })
             .unwrap();
         let enc = certs[0].encrypted_key_pem.as_deref().unwrap();
         assert!(decrypt_key_pem(enc, KeyAlgorithm::EcdsaP256, &old).is_err());
@@ -309,7 +312,10 @@ mod tests {
         // A foreign certificate id rolls everything back.
         let before = db.get_ca(ca.id).unwrap().unwrap().encrypted_key_pem;
         let bogus = encrypt_key_pem(&ca_material.key, &old).unwrap();
-        assert!(db.rewrap_ca_keys(ca.id, &bogus, &[(9999, String::new())]).is_err());
+        assert!(
+            db.rewrap_ca_keys(ca.id, &bogus, &[(9999, String::new())])
+                .is_err()
+        );
         assert_eq!(db.get_ca(ca.id).unwrap().unwrap().encrypted_key_pem, before);
         assert!(db.audit_csv().unwrap().contains("ca.change_passphrase"));
     }
