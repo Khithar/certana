@@ -62,14 +62,27 @@ pub fn acquire(db_path: &Path) -> Result<LockState> {
     let path = lock_path(db_path);
     if let Some(existing) = read_lock(&path)? {
         let age = OffsetDateTime::now_utc() - existing.acquired_at;
-        let is_me = existing.pid == std::process::id() && existing.host == hostname();
-        if age < STALE_AFTER && !is_me {
+        let same_host = existing.host == hostname();
+        let is_me = same_host && existing.pid == std::process::id();
+        // A lock from this host whose process is gone (crash, kill) is abandoned regardless of age.
+        let abandoned = same_host && !process_alive(existing.pid);
+        if age < STALE_AFTER && !is_me && !abandoned {
             return Ok(LockState::HeldBy(existing));
         }
     }
     let info = current_info();
     write_lock(&path, &info)?;
     Ok(LockState::Acquired(LockGuard { path, info }))
+}
+
+/// Whether a process with this id exists on the local machine. Only Linux can answer this cheaply
+/// (procfs); elsewhere we conservatively assume it is alive.
+pub fn process_alive(pid: u32) -> bool {
+    if cfg!(target_os = "linux") {
+        Path::new(&format!("/proc/{pid}")).exists()
+    } else {
+        true
+    }
 }
 
 pub fn read_lock(path: &Path) -> Result<Option<LockInfo>> {

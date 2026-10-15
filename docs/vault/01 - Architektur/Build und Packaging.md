@@ -42,5 +42,8 @@ npm run bump -- minor            # nur Version erhöhen: patch | minor | major
 2. **Flathub**: Manifest unter `packaging/flatpak/`, `org.gnome.Platform` ≥ 49.
 3. Kein Snap (Mint blockiert snapd). Optional später eigenes APT-Repo.
 
+## Demo-Daten und Screenshots
+`CERTANA_DEMO_DIR=/pfad cargo test --manifest-path src-tauri/Cargo.toml --test demo_db` baut eine Demo-Datenbank (Passphrasen `demorootpassphrase2026` / `demoissuingpassphrase2026`). App dazu mit `HOME=<leer> CERTANA_DATA_DIR=/pfad target/release/certana` starten, damit die echte DB und der WebKit-Speicher unberührt bleiben. Screenshots liegen in `docs/screenshots/`. Achtung: Release-Binaries nur über `npm run tauri build -- --no-bundle` bauen, `cargo build --release` allein lädt die Dev-URL.
+
 ## Versionierung
 Die Version steht in `package.json`, `src-tauri/tauri.conf.json` und `[workspace.package]` in `src-tauri/Cargo.toml`. `scripts/bump-version.mjs` hält alle drei synchron und zieht `Cargo.lock` nach. Entscheidung: [[05 - Entscheidungen/2026-10-15-versionierung-pro-build]].

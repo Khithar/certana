@@ -4,6 +4,16 @@ All notable changes to Certana are documented here. Format follows Keep a Change
 
 ## [Unreleased]
 
+### Fixed
+- Certificate details showed «Invalid Date» for validity: `CertificateInfo` now serialises dates as RFC 3339.
+- A crashed or killed Certana left the database read-only for ten minutes; a lock whose process no longer
+  exists on the same host is now taken over immediately.
+- Native select boxes clipped their text in WebKitGTK; CRL history columns ran into each other; the CA details
+  card wrapped serial and fingerprint into a sliver; the revocation page showed a CRL serving hint without a URL.
+
+### Added
+- README screenshots and a demo-database builder (`CERTANA_DEMO_DIR=… cargo test --test demo_db`).
+
 ## [1.0.0] - 2026-10-15
 
 First release: internal certificate authority for Linux desktops (.deb, AppImage, .rpm).

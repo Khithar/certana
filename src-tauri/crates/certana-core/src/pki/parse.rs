@@ -16,7 +16,9 @@ pub struct CertificateInfo {
     pub issuer: String,
     pub issuer_common_name: Option<String>,
     pub serial_hex: String,
+    #[serde(with = "::time::serde::rfc3339")]
     pub not_before: OffsetDateTime,
+    #[serde(with = "::time::serde::rfc3339")]
     pub not_after: OffsetDateTime,
     pub is_ca: bool,
     pub path_len: Option<u32>,
@@ -307,4 +309,36 @@ pub(crate) fn colon_hex(hex: &str) -> String {
         .map(|c| std::str::from_utf8(c).unwrap_or("?").to_uppercase())
         .collect::<Vec<_>>()
         .join(":")
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::pki::ca::{CaSpec, DistributionUrls, create_root};
+    use crate::pki::keys::KeyAlgorithm;
+    use crate::pki::profiles::Subject;
+
+    /// The webview parses dates with `new Date(...)`, which only understands RFC 3339.
+    #[test]
+    fn certificate_info_dates_serialize_as_rfc3339() {
+        let root = create_root(&CaSpec {
+            subject: Subject::with_common_name("Date Test"),
+            algorithm: KeyAlgorithm::EcdsaP256,
+            validity_days: 10,
+            path_len: 0,
+            urls: DistributionUrls::default(),
+        })
+        .unwrap();
+        let info = parse_certificate_pem(&root.certificate_pem).unwrap();
+        let json: serde_json::Value = serde_json::to_value(&info).unwrap();
+        for key in ["not_before", "not_after"] {
+            let s = json[key].as_str().unwrap();
+            assert!(
+                OffsetDateTime::parse(s, &::time::format_description::well_known::Rfc3339).is_ok(),
+                "{key} = {s} is not RFC 3339"
+            );
+        }
+        let back: CertificateInfo = serde_json::from_value(json).unwrap();
+        assert_eq!(back.not_after, info.not_after);
+    }
 }

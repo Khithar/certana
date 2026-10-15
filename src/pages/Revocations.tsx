@@ -61,12 +61,12 @@ export default function Revocations() {
             </Card>
             <Card title={t("crl.history")} actions={latest && <><Button size="sm" variant="outline" onClick={() => exportLatest(false)}><Download className="size-4" />DER</Button><Button size="sm" variant="outline" onClick={() => exportLatest(true)}><Download className="size-4" />PEM</Button></>}>
               {crls.length === 0 ? <Empty>{t("crl.none")}</Empty> : (
-                <table className="w-full text-sm"><thead className="text-left text-xs text-muted-foreground"><tr><th className="pb-2">#</th><th className="pb-2">{t("crl.thisUpdate")}</th><th className="pb-2">{t("crl.nextUpdate")}</th><th className="pb-2">{t("crl.exportedTo")}</th></tr></thead>
-                  <tbody>{crls.map((c) => { const exp = new Date(c.next_update).getTime() < now; return <tr key={c.id} className="border-t border-border"><td className="py-2">{c.crl_number}</td><td className="py-2">{fmtDateTime(c.this_update, i18n.language)}</td><td className="py-2"><Badge tone={exp ? "red" : "green"}>{fmtDateTime(c.next_update, i18n.language)}</Badge></td><td className="max-w-48 truncate py-2 text-muted-foreground" title={c.exported_path ?? ""}>{c.exported_path ?? "–"}</td></tr>; })}</tbody></table>
+                <table className="w-full text-sm"><thead className="text-left text-xs text-muted-foreground"><tr><th className="pb-2 pr-4">#</th><th className="pb-2 pr-4">{t("crl.thisUpdate")}</th><th className="pb-2 pr-4">{t("crl.nextUpdate")}</th><th className="pb-2 pr-4">{t("crl.exportedTo")}</th></tr></thead>
+                  <tbody>{crls.map((c) => { const exp = new Date(c.next_update).getTime() < now; return <tr key={c.id} className="border-t border-border"><td className="py-2 pr-4">{c.crl_number}</td><td className="py-2 pr-4">{fmtDateTime(c.this_update, i18n.language)}</td><td className="py-2 pr-4"><Badge tone={exp ? "red" : "green"}>{fmtDateTime(c.next_update, i18n.language)}</Badge></td><td className="max-w-48 truncate py-2 pr-4 text-muted-foreground" title={c.exported_path ?? ""}>{c.exported_path ?? "–"}</td></tr>; })}</tbody></table>
               )}
             </Card>
           </div>
-          <Alert tone="info">{t("crl.serveHint", { url: ca.crl_url ?? "–" })}</Alert>
+          {ca.crl_url ? <Alert tone="info">{t("crl.serveHint", { url: ca.crl_url })}</Alert> : <Alert tone="info">{t("crl.optionalHint")}</Alert>}
         </>
       )}
       {dialog}

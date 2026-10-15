@@ -268,6 +268,36 @@ mod tests {
         );
     }
 
+    /// A fresh lock from this host whose process no longer exists (crash) is taken over at once.
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn dead_process_lock_on_same_host_is_taken_over() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("crashed.db");
+        Database::open(&path, OpenOptions::default()).unwrap();
+        let dead_pid = (4_000_000u32..4_000_100)
+            .find(|p| !lock::process_alive(*p))
+            .unwrap();
+        let crashed = LockInfo {
+            host: lock::current_info().host,
+            user: "someone".into(),
+            pid: dead_pid,
+            acquired_at: ::time::OffsetDateTime::now_utc(),
+        };
+        lock::write_lock(&lock::lock_path(&path), &crashed).unwrap();
+        let db = Database::open(&path, OpenOptions::default()).unwrap();
+        assert!(!db.is_read_only());
+        // The same fresh lock from another host is still respected.
+        drop(db);
+        let foreign = LockInfo {
+            host: "other-host".into(),
+            ..crashed
+        };
+        lock::write_lock(&lock::lock_path(&path), &foreign).unwrap();
+        let db = Database::open(&path, OpenOptions::default()).unwrap();
+        assert!(db.is_read_only());
+    }
+
     #[test]
     fn backup_copies_data() {
         let dir = tempfile::tempdir().unwrap();

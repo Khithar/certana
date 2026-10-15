@@ -122,7 +122,7 @@ function CaView({ ca, onUnlock, onRootCrl, onChangePassphrase }: { ca: CaRecord;
       <ErrorBanner error={error} />
       {ca.kind === "root" && <Alert tone="info" title={t("ca.rootOfflineTitle")}>{t("ca.rootOfflineHint")}</Alert>}
       <div className="grid gap-6 lg:grid-cols-2">
-        <Card title={t("ca.details")}>
+        <Card title={t("ca.details")} className="lg:col-span-2">
           {detail ? (
             <KeyValue rows={[
               [t("cert.serial"), <Mono key="s">{colonHex(detail.info.serial_hex)}</Mono>],

@@ -13,6 +13,20 @@ publish CRLs, and keep an eye on expiry dates.
 - Works with or without a CRL distribution point – for a purely internal CA you can simply leave it empty.
 - UI in English and German, light and dark theme.
 
+## Screenshots
+
+| Dashboard | Issuing CA |
+|---|---|
+| ![Dashboard with certificate counts, expiry warnings, CA status and audit trail](docs/screenshots/dashboard.png) | ![Issuing CA page with details, session lock, passphrase change and CRL settings](docs/screenshots/ca.png) |
+
+| Certificates | Certificate detail |
+|---|---|
+| ![Certificate list with search, filters, SANs, expiry countdown and status](docs/screenshots/certificates.png) | ![Certificate detail with key usage, fingerprint, notes and the OpenSSL-style text dump](docs/screenshots/detail.png) |
+
+| Wizard – identity | Wizard – key |
+|---|---|
+| ![Wizard step 2: hostnames, IPs or e-mail addresses parsed into SANs](docs/screenshots/wizard-identity.png) | ![Wizard step 3: generate the key in Certana or use a CSR from the server](docs/screenshots/wizard-key.png) |
+
 ## Installation
 
 Download the package for your distribution from the [Releases](https://github.com/Khithar/certana/releases) page.

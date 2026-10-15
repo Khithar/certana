@@ -37,6 +37,11 @@ Nutzer will auf 1.0.0 und erstes Release. Ideenliste besprochen; umgesetzt wurde
 - Push nach GitHub über SSH (GitHub-Initialcommit per Merge eingebunden, `-X ours`).
 - `npm run bump -- major` → 1.0.0, CHANGELOG `[1.0.0] - 2026-10-15`, lokaler .deb-Build als Probe, Tag `v1.0.0` gepusht → `release.yml` baut deb/AppImage/rpm/NSIS und legt einen **Draft**-Release an, der manuell veröffentlicht wird. Signierung (Tauri/GPG) ist ohne Secrets übersprungen.
 
+## Screenshots und dabei gefundene Fehler (gleiche Session)
+- Demo-Datenbank per `src-tauri/tests/demo_db.rs` (läuft nur mit `CERTANA_DEMO_DIR`): Root, Issuing CA, neun Zertifikate (Server/Client/S-MIME/Code-Signing, auslaufende, widerrufene, Notizen). App mit isoliertem `HOME` und `CERTANA_DATA_DIR` gestartet, Eingaben per python-xlib/XTest, Fenster per `import -window` aufgenommen, Audit-Actor in der Demo-DB anonymisiert. Ergebnis: `docs/screenshots/*.png` (1200×950, Dark-Mode), eingebunden in der README.
+- Dabei behoben: **«Invalid Date»** in CA-/Zertifikatsdetails (`CertificateInfo` serialisierte `OffsetDateTime` nicht als RFC 3339; Test `certificate_info_dates_serialize_as_rfc3339`). **Lock nach Absturz:** gleicher Host + toter Prozess gilt sofort als verwaist (`lock::process_alive`, Test `dead_process_lock_on_same_host_is_taken_over`). Select-Text in WebKitGTK abgeschnitten (`py-0`), CA-Detailkarte volle Breite, CRL-Historie Spaltenabstand, CRL-Serve-Hinweis nur mit URL.
+- Hinweis: `cargo build --release` ohne Tauri-CLI bettet das Frontend nicht ein (lädt devUrl); für Binaries immer `npm run tauri build [-- --no-bundle]`.
+
 ## Offen
 - Für 1.0.0 noch offen: Installationstest .deb und kompletter UI-Durchlauf unter Mint, eigenes Icon (Tauri-Platzhalter), Release-Workflow-Secrets (Tauri-Signing, GPG) anlegen oder Signierung für 1.0.0 entfernen, GPG-Fingerprint in README, CHANGELOG auf 1.0.0 datieren, `npm run bump -- major`.
 - Später: Tastaturbedienung/ARIA in Dialogen, Löschen widerrufener/abgelaufener Testzertifikate.
