@@ -42,6 +42,9 @@ Nutzer will auf 1.0.0 und erstes Release. Ideenliste besprochen; umgesetzt wurde
 - Dabei behoben: **«Invalid Date»** in CA-/Zertifikatsdetails (`CertificateInfo` serialisierte `OffsetDateTime` nicht als RFC 3339; Test `certificate_info_dates_serialize_as_rfc3339`). **Lock nach Absturz:** gleicher Host + toter Prozess gilt sofort als verwaist (`lock::process_alive`, Test `dead_process_lock_on_same_host_is_taken_over`). Select-Text in WebKitGTK abgeschnitten (`py-0`), CA-Detailkarte volle Breite, CRL-Historie Spaltenabstand, CRL-Serve-Hinweis nur mit URL.
 - Hinweis: `cargo build --release` ohne Tauri-CLI bettet das Frontend nicht ein (lädt devUrl); für Binaries immer `npm run tauri build [-- --no-bundle]`.
 
+## Abschluss
+- **1.0.0** und **1.0.1** als GitHub-Releases veröffentlicht (deb, rpm, AppImage, Windows-Installer, SHA256SUMS): https://github.com/Khithar/certana/releases. README mit Screenshots, Installation, Quick start und Windows-Hinweis.
+
 ## Offen
 - Für 1.0.0 noch offen: Installationstest .deb und kompletter UI-Durchlauf unter Mint, eigenes Icon (Tauri-Platzhalter), Release-Workflow-Secrets (Tauri-Signing, GPG) anlegen oder Signierung für 1.0.0 entfernen, GPG-Fingerprint in README, CHANGELOG auf 1.0.0 datieren, `npm run bump -- major`.
 - Später: Tastaturbedienung/ARIA in Dialogen, Löschen widerrufener/abgelaufener Testzertifikate.

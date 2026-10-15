@@ -81,7 +81,7 @@ Cargo liegt unter `~/.cargo/bin` (rustup). Build-Systempakete siehe `docs/vault/
 ## Status
 
 Phasen 1–7 abgeschlossen (Bootstrap, Core-PKI, DB-Schicht, Commands, komplette UI). Phase 8 (Packaging/CI) weitgehend
-fertig; Ziel ist Release 1.0.0 (Repo: github.com/Khithar/certana). Offen: .deb-Installationstest unter Mint, manueller UI-Durchlauf,
-eigenes Icon, Release-Workflow-Secrets. Phasenplan und Status: `docs/vault/00 - Index.md`.
+fertig; 1.0.1 ist veröffentlicht (github.com/Khithar/certana, Release per Tag `v*`). Offen: .deb-Installationstest unter Mint,
+eigenes Icon, Release-Signierung (GPG/Tauri-Secrets), Windows-Durchlauf. Phasenplan und Status: `docs/vault/00 - Index.md`.
 Wichtig: Schlüssel immer über `pki::keys::PrivateKey` erzeugen/laden (normalisiert auf PKCS#8 v1, sonst liest OpenSSL
 Ed25519-Keys nicht).
