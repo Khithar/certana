@@ -1,0 +1,79 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Tag `vX.Y.Z` → draft GitHub release with .deb / AppImage / .rpm (Linux) and NSIS installer (Windows),
+# then SHA256SUMS + GPG signature. Publish the draft manually after testing the .deb on Mint.
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: ubuntu-22.04 # oldest glibc for AppImage compatibility
+            args: ""
+          - platform: windows-latest
+            args: "--bundles nsis"
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: ./src-tauri -> target
+      - name: System dependencies (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf xdg-utils
+      - run: npm ci
+      - uses: tauri-apps/tauri-action@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        with:
+          tagName: v__VERSION__
+          releaseName: "Certana v__VERSION__"
+          releaseBody: "See CHANGELOG.md."
+          releaseDraft: true
+          prerelease: false
+          args: ${{ matrix.args }}
+
+  checksums:
+    needs: build
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - name: Download draft assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p assets && cd assets
+          gh release download "${GITHUB_REF_NAME}" --repo "${GITHUB_REPOSITORY}" --pattern '*' || true
+          ls -la
+      - name: SHA256SUMS + GPG signature
+        env:
+          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+        run: |
+          cd assets
+          sha256sum * > SHA256SUMS
+          if [ -n "$GPG_PRIVATE_KEY" ]; then
+            echo "$GPG_PRIVATE_KEY" | gpg --batch --import
+            gpg --batch --yes --pinentry-mode loopback --passphrase "$GPG_PASSPHRASE" --detach-sign --armor SHA256SUMS
+          fi
+      - name: Upload
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "${GITHUB_REF_NAME}" --repo "${GITHUB_REPOSITORY}" --clobber assets/SHA256SUMS assets/SHA256SUMS.asc 2>/dev/null || gh release upload "${GITHUB_REF_NAME}" --repo "${GITHUB_REPOSITORY}" --clobber assets/SHA256SUMS

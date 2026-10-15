@@ -1,0 +1,54 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Certana",
+  "version": "0.1.0",
+  "identifier": "io.github.certana",
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "devUrl": "http://localhost:1420",
+    "beforeBuildCommand": "npm run build",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "Certana",
+        "width": 1200,
+        "height": 800,
+        "minWidth": 960,
+        "minHeight": 640
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self'; connect-src ipc: http://ipc.localhost; img-src 'self' data:; style-src 'self' 'unsafe-inline'; font-src 'self'"
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["deb", "appimage", "rpm", "nsis"],
+    "category": "Utility",
+    "shortDescription": "Internal certificate authority for Linux desktops",
+    "longDescription": "Certana manages an internal certificate authority: offline root CA, intermediate CA, certificate issuing wizard for Apache/nginx, client, S/MIME and code-signing certificates, revocation with CRL export and expiry monitoring.",
+    "license": "GPL-3.0-or-later",
+    "licenseFile": "../LICENSE",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "linux": {
+      "deb": {
+        "section": "utils",
+        "desktopTemplate": "../packaging/certana.desktop"
+      },
+      "rpm": {
+        "desktopTemplate": "../packaging/certana.desktop"
+      }
+    },
+    "windows": {
+      "webviewInstallMode": { "type": "downloadBootstrapper" }
+    }
+  }
+}

@@ -1,0 +1,40 @@
+# Flatpak manifest (Flathub submission). Build offline sources first:
+#   python3 flatpak-cargo-generator.py src-tauri/Cargo.lock -o cargo-sources.json
+#   flatpak-node-generator npm package-lock.json -o node-sources.json
+app-id: io.github.certana.Certana
+runtime: org.gnome.Platform
+runtime-version: "49"
+sdk: org.gnome.Sdk
+sdk-extensions:
+  - org.freedesktop.Sdk.Extension.rust-stable
+  - org.freedesktop.Sdk.Extension.node20
+command: certana
+finish-args:
+  - --socket=wayland
+  - --socket=fallback-x11
+  - --device=dri
+  - --share=ipc
+  - --talk-name=org.freedesktop.Notifications
+  - --filesystem=home          # export packages, CRLs, root bundles on removable media
+  - --filesystem=/media
+  - --filesystem=/run/media
+build-options:
+  append-path: /usr/lib/sdk/rust-stable/bin:/usr/lib/sdk/node20/bin
+  env:
+    CARGO_HOME: /run/build/certana/cargo
+    npm_config_offline: "true"
+modules:
+  - name: certana
+    buildsystem: simple
+    build-commands:
+      - npm ci --offline
+      - cargo --offline fetch --manifest-path src-tauri/Cargo.toml
+      - npm run tauri build -- --bundles deb
+      - ar -x src-tauri/target/release/bundle/deb/*.deb
+      - tar -xf data.tar.gz -C /app --strip-components=1 ./usr
+      - install -Dm644 packaging/io.github.certana.Certana.metainfo.xml /app/share/metainfo/io.github.certana.Certana.metainfo.xml
+    sources:
+      - type: dir
+        path: ../..
+      - cargo-sources.json
+      - node-sources.json

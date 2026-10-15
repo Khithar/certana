@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=Certana
+Comment=Internal certificate authority – issue and manage SSL/TLS certificates
+Comment[de]=Interne Zertifizierungsstelle – SSL/TLS-Zertifikate ausstellen und verwalten
+Exec={{exec}}
+Icon={{icon}}
+Terminal=false
+Categories=Utility;Security;Network;
+Keywords=certificate;CA;PKI;SSL;TLS;X.509;Zertifikat;
+StartupWMClass=Certana

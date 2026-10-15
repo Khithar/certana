@@ -1,0 +1,39 @@
+/* SPDX-License-Identifier: GPL-3.0-or-later */
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --background: oklch(0.985 0 0);
+  --foreground: oklch(0.2 0.01 260);
+  --muted: oklch(0.95 0.005 260);
+  --muted-foreground: oklch(0.5 0.02 260);
+  --border: oklch(0.9 0.01 260);
+  --primary: oklch(0.55 0.17 255);
+  --primary-foreground: oklch(0.99 0 0);
+  --sidebar: oklch(0.96 0.005 260);
+}
+.dark {
+  --background: oklch(0.17 0.01 260);
+  --foreground: oklch(0.95 0.005 260);
+  --muted: oklch(0.24 0.01 260);
+  --muted-foreground: oklch(0.7 0.02 260);
+  --border: oklch(0.3 0.01 260);
+  --primary: oklch(0.72 0.15 255);
+  --primary-foreground: oklch(0.15 0.01 260);
+  --sidebar: oklch(0.2 0.01 260);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-sidebar: var(--sidebar);
+}
+
+html, body, #root { height: 100%; }
+body { @apply bg-background text-foreground antialiased; }

@@ -1,0 +1,14 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "main",
+  "description": "Minimal permissions for the Certana main window. File access runs through Rust commands only.",
+  "windows": ["main"],
+  "permissions": [
+    "core:default",
+    "dialog:allow-open",
+    "dialog:allow-save",
+    "notification:default",
+    "clipboard-manager:allow-write-text",
+    "opener:allow-open-url"
+  ]
+}
