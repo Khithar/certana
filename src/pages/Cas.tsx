@@ -11,7 +11,7 @@ import { Badge, Button, Card, Empty, Field, Input, KeyValue, Mono, PageHeader, S
 import { ErrorBanner } from "@/components/ErrorBanner";
 import { UnlockDialog } from "@/components/UnlockDialog";
 import { NoDatabase } from "@/pages/Settings";
-import { RootCeremonyDialog, RootImportDialog, IntermediateDialog, RootCrlDialog } from "@/pages/CaDialogs";
+import { RootCeremonyDialog, RootImportDialog, IntermediateDialog, RootCrlDialog, ChangePassphraseDialog } from "@/pages/CaDialogs";
 import { colonHex, fmtDate, fmtDateTime } from "@/lib/format";
 
 export const ALGOS: KeyAlgorithm[] = ["ecdsa-p256", "ecdsa-p384", "ed25519", "rsa2048", "rsa3072", "rsa4096"];
@@ -23,7 +23,7 @@ export default function Cas() {
   const [params, setParams] = useSearchParams();
   const selectedId = Number(params.get("ca")) || cas[0]?.id || null;
   const selected = cas.find((c) => c.id === selectedId) ?? null;
-  const [dialog, setDialog] = useState<"root" | "import" | "intermediate" | "unlock" | "rootCrl" | null>(null);
+  const [dialog, setDialog] = useState<"root" | "import" | "intermediate" | "unlock" | "rootCrl" | "passphrase" | null>(null);
   const roots = cas.filter((c) => c.kind === "root");
   if (!db) return <NoDatabase />;
   return (
@@ -54,18 +54,19 @@ export default function Cas() {
         )}
       </aside>
       <div className="min-w-0 flex-1 overflow-auto p-8">
-        {selected ? <CaView ca={selected} onUnlock={() => setDialog("unlock")} onRootCrl={() => setDialog("rootCrl")} /> : <Empty>{t("ca.selectHint")}</Empty>}
+        {selected ? <CaView ca={selected} onUnlock={() => setDialog("unlock")} onRootCrl={() => setDialog("rootCrl")} onChangePassphrase={() => setDialog("passphrase")} /> : <Empty>{t("ca.selectHint")}</Empty>}
       </div>
       <RootCeremonyDialog open={dialog === "root"} onClose={() => setDialog(null)} onDone={async (id) => { await refresh(); setParams({ ca: String(id) }); }} />
       <RootImportDialog open={dialog === "import"} onClose={() => setDialog(null)} onDone={async (id) => { await refresh(); setParams({ ca: String(id) }); }} />
       <IntermediateDialog open={dialog === "intermediate"} onClose={() => setDialog(null)} roots={roots} onDone={async (id) => { await refresh(); if (id) setParams({ ca: String(id) }); }} />
       <UnlockDialog ca={selected} open={dialog === "unlock"} onClose={() => setDialog(null)} />
       <RootCrlDialog ca={selected} open={dialog === "rootCrl"} onClose={() => setDialog(null)} onDone={refresh} />
+      <ChangePassphraseDialog ca={selected} open={dialog === "passphrase"} onClose={() => setDialog(null)} onDone={refresh} />
     </div>
   );
 }
 
-function CaView({ ca, onUnlock, onRootCrl }: { ca: CaRecord; onUnlock: () => void; onRootCrl: () => void }) {
+function CaView({ ca, onUnlock, onRootCrl, onChangePassphrase }: { ca: CaRecord; onUnlock: () => void; onRootCrl: () => void; onChangePassphrase: () => void }) {
   const { t, i18n } = useTranslation();
   const { db, session, refresh, settings } = useApp();
   const { busy, error, run } = useCommand();
@@ -113,6 +114,7 @@ function CaView({ ca, onUnlock, onRootCrl }: { ca: CaRecord; onUnlock: () => voi
             <Button variant="outline" size="sm" onClick={() => exportCert("pem")}><Download className="size-4" />PEM</Button>
             <Button variant="outline" size="sm" onClick={() => exportCert("der")}><Download className="size-4" />DER</Button>
             {ca.kind === "intermediate" && detail && detail.chain_pem && <Button variant="outline" size="sm" onClick={exportChain}>{t("ca.exportChain")}</Button>}
+            {ca.kind === "intermediate" && ca.has_key && <Button variant="outline" size="sm" onClick={onChangePassphrase} disabled={db?.read_only}>{t("ca.changePassphrase")}</Button>}
             {ca.kind === "intermediate" && (unlocked ? <Button variant="outline" size="sm" onClick={async () => { await api.caLock(); await refresh(); }}>{t("session.lock")}</Button> : <Button size="sm" onClick={onUnlock} disabled={db?.read_only}><KeyRound className="size-4" />{t("session.unlock")}</Button>)}
           </>
         }
@@ -139,7 +141,8 @@ function CaView({ ca, onUnlock, onRootCrl }: { ca: CaRecord; onUnlock: () => voi
         <Card title={t("crl.title")} actions={ca.kind === "root" ? <Button size="sm" variant="outline" onClick={onRootCrl} disabled={db?.read_only}><RefreshCw className="size-4" />{t("crl.publishRoot")}</Button> : <Button size="sm" onClick={publishCrl} loading={busy} disabled={!unlocked || db?.read_only}><RefreshCw className="size-4" />{t("crl.publish")}</Button>}>
           <div className="space-y-3">
             <p className="text-sm text-muted-foreground">{t("crl.hint", { days: ca.crl_days })}</p>
-            {ca.kind === "intermediate" && !unlocked && <Alert tone="warning">{t("crl.needsUnlock")}</Alert>}
+            {!ca.crl_url && <Alert tone="info">{t("crl.optionalHint")}</Alert>}
+            {ca.kind === "intermediate" && ca.crl_url && !unlocked && <Alert tone="warning">{t("crl.needsUnlock")}</Alert>}
             {published && (
               <Alert tone="success" title={t("crl.published", { number: published.crl.crl_number, count: published.revoked_count })}>
                 {published.der_path ? <Mono>{published.der_path}</Mono> : t("crl.notExported")}

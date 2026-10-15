@@ -29,6 +29,7 @@ src-tauri/crates/certana-core/src/{pki,vault,db}/   Domäne
 src-tauri/src/            main.rs, lib.rs, commands/, state.rs
 src-tauri/capabilities/   Tauri-Permissions (minimal halten)
 packaging/                certana.desktop (Startmenü), Flatpak-Manifest
+.run/                     geteilte RustRover-Run-Konfigurationen (Tauri dev, Cargo test/clippy, Frontend checks, Release .deb)
 docs/vault/               Obsidian-Vault (Projektdokumentation, deutsch)
 ```
 
@@ -42,6 +43,7 @@ cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings
 cargo fmt --manifest-path src-tauri/Cargo.toml
 npm run lint && npx tsc --noEmit && npx vitest run
 npm run tauri build                                           # .deb/AppImage/.rpm → src-tauri/target/release/bundle/
+npm run release[:deb]                                         # Version hochzählen (scripts/bump-version.mjs) + Build
 ```
 Cargo liegt unter `~/.cargo/bin` (rustup). Build-Systempakete siehe `docs/vault/01 - Architektur/Build und Packaging.md`.
 
@@ -79,6 +81,7 @@ Cargo liegt unter `~/.cargo/bin` (rustup). Build-Systempakete siehe `docs/vault/
 ## Status
 
 Phasen 1–7 abgeschlossen (Bootstrap, Core-PKI, DB-Schicht, Commands, komplette UI). Phase 8 (Packaging/CI) weitgehend
-fertig; offen: .deb-Installationstest unter Mint, manueller UI-Durchlauf, eigenes Icon, GitHub-Repo. Phasenplan und Status: `docs/vault/00 - Index.md`.
+fertig; Ziel ist Release 1.0.0 (Repo: github.com/Khithar/certana). Offen: .deb-Installationstest unter Mint, manueller UI-Durchlauf,
+eigenes Icon, Release-Workflow-Secrets. Phasenplan und Status: `docs/vault/00 - Index.md`.
 Wichtig: Schlüssel immer über `pki::keys::PrivateKey` erzeugen/laden (normalisiert auf PKCS#8 v1, sonst liest OpenSSL
 Ed25519-Keys nicht).

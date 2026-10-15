@@ -6,6 +6,7 @@ pub struct AppInfo {
     pub name: &'static str,
     pub version: &'static str,
     pub license: &'static str,
+    pub repository: &'static str,
 }
 
 /// Static application metadata for the About dialog.
@@ -15,5 +16,6 @@ pub fn app_info() -> AppInfo {
         name: "Certana",
         version: env!("CARGO_PKG_VERSION"),
         license: "GPL-3.0-or-later",
+        repository: env!("CARGO_PKG_REPOSITORY"),
     }
 }

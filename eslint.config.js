@@ -9,6 +9,11 @@ export default tseslint.config(
   ...tseslint.configs.recommended,
   reactHooks.configs.flat.recommended,
   {
+    // Node-Skripte (Build-Helfer), kein Browser-Kontext.
+    files: ["scripts/**/*.mjs"],
+    languageOptions: { globals: { process: "readonly", console: "readonly", URL: "readonly" } },
+  },
+  {
     rules: {
       // Syncing props/context into local draft state via effects is deliberate in a few forms.
       "react-hooks/set-state-in-effect": "off",

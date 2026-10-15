@@ -7,7 +7,7 @@ tags: [type/reference, area/betrieb]
 # Release-Prozess
 
 Zurück zum [[00 - Index]].
-
+1. Version anheben: `npm run bump -- patch|minor|major` (hält `package.json`, `src-tauri/Cargo.toml`, `src-tauri/tauri.conf.json` und `Cargo.lock` synchron, siehe [[05 - Entscheidungen/2026-10-15-versionierung-pro-build]]); lokale Builds über `npm run release[:deb]`. `CHANGELOG.md` ergänzen.
 1. Version in `package.json`, `src-tauri/Cargo.toml` (Workspace) und `src-tauri/tauri.conf.json` anheben, `CHANGELOG.md` ergänzen.
 2. Tag `v<version>` pushen → `release.yml`: Matrix `ubuntu-22.04` + `windows-latest`, `tauri-apps/tauri-action@v1`, Draft-Release mit deb/AppImage/rpm/NSIS.
 3. Folge-Job: `SHA256SUMS` erzeugen, GPG-signieren (`--detach-sign --armor`), hochladen. Release-Key-Fingerprint steht im README.

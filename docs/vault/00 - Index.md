@@ -21,6 +21,7 @@ Certana ist eine native Linux-Desktop-Anwendung (Rust + Tauri 2) zum Betrieb ein
 - [[05 - Entscheidungen/ADR-Index]] – Architecture Decision Records.
 - [[06 - Betrieb/Installation]] · [[06 - Betrieb/Release-Prozess]].
 - [[99 - Sessions/2026-10-15 Bootstrap]] – Arbeitsjournal.
+- [[99 - Sessions/2026-10-15 UI-Fix Select Dark-Mode]] – Select-Popups im Dark-Mode lesbar.
 
 ## Status-Übersicht
 
@@ -33,5 +34,5 @@ Certana ist eine native Linux-Desktop-Anwendung (Rust + Tauri 2) zum Betrieb ein
 | 5 | CA-Flows (Root-Zeremonie, Import, Intermediate, Unlock/Auto-Lock) | fertig |
 | 6 | Zertifikats-Wizard, Verwaltung, Export, Renew | fertig |
 | 7 | Revocation, CRL, Dashboard, Benachrichtigung | fertig |
-| 8 | Packaging/CI (deb/AppImage/rpm gebaut, GitHub Actions, Flatpak-Manifest) | fertig bis auf Installationstest |
-| 9 | Doku-Abschluss | laufend |
+| 8 | Packaging/CI (deb/AppImage/rpm gebaut, GitHub Actions, Flatpak-Manifest) | fertig bis auf Installationstest; manueller UI-Durchlauf laufend (Select-Dark-Mode-Fix 2026-10-15) |
+| 9 | Doku-Abschluss, Release 1.0.0 (Passphrase-Wechsel, Theme, About, CRL optional umgesetzt; offen: Installationstest, Icon, Release-Secrets) | laufend |

@@ -33,3 +33,6 @@ Dashboard warnt, wenn die aktuelle CRL in < 2 Tagen abläuft; «CRL erneuern» e
 ## OCSP
 
 Nicht in v1 (siehe [[05 - Entscheidungen/ADR-Index]]). Vorbereitung: AIA kann bereits eine OCSP-URL tragen, sobald ein Responder existiert.
+
+## Betrieb ohne CRL
+Entscheid 2026-10-15: Im internen Betrieb wird keine CRL-URL in den CAs hinterlegt. Zertifikate erhalten dann keinen CRL Distribution Point, Clients prüfen nichts. Widerruf in Certana dient nur der eigenen Übersicht und dem Audit-Log; kompromittierte Zertifikate werden durch Ersatz auf dem Server und kurze Laufzeiten abgefangen. Falls doch eine CRL gewünscht wird: Laufzeit pro CA auf 90–365 Tage setzen und nach jedem Widerruf neu veröffentlichen. CRL-Upload (SFTP/FTP) und Post-Publish-Hook wurden besprochen und bewusst nicht gebaut.

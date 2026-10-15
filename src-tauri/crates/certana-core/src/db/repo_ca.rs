@@ -135,6 +135,54 @@ impl Database {
         )
     }
 
+    /// Replace the CA key and all given leaf keys in one transaction (passphrase change).
+    /// `leaf_keys` are `(certificate_id, encrypted_key_pem)` pairs already wrapped with the new
+    /// passphrase. Audited as `ca.change_passphrase`.
+    pub fn rewrap_ca_keys(
+        &self,
+        ca_id: i64,
+        encrypted_ca_key_pem: &str,
+        leaf_keys: &[(i64, String)],
+    ) -> Result<()> {
+        self.ensure_writable()?;
+        let conn = self.conn();
+        conn.execute("BEGIN IMMEDIATE", [])?;
+        let res = (|| -> Result<()> {
+            let n = conn.execute(
+                "UPDATE cas SET encrypted_key_pem = ?2 WHERE id = ?1",
+                params![ca_id, encrypted_ca_key_pem],
+            )?;
+            if n == 0 {
+                return Err(CertanaError::Invalid(format!("CA {ca_id} not found")));
+            }
+            for (cert_id, pem) in leaf_keys {
+                let n = conn.execute(
+                    "UPDATE certificates SET encrypted_key_pem = ?3 WHERE id = ?1 AND ca_id = ?2",
+                    params![cert_id, ca_id, pem],
+                )?;
+                if n == 0 {
+                    return Err(CertanaError::Invalid(format!(
+                        "certificate {cert_id} does not belong to CA {ca_id}"
+                    )));
+                }
+            }
+            Ok(())
+        })();
+        match res {
+            Ok(()) => conn.execute("COMMIT", [])?,
+            Err(e) => {
+                let _ = conn.execute("ROLLBACK", []);
+                return Err(e);
+            }
+        };
+        self.audit(
+            "ca.change_passphrase",
+            "ca",
+            ca_id,
+            serde_json::json!({ "leaf_keys": leaf_keys.len() }),
+        )
+    }
+
     /// Atomically reserve the next CRL number for a CA.
     pub fn next_crl_number(&self, ca_id: i64) -> Result<i64> {
         self.ensure_writable()?;
@@ -169,5 +217,100 @@ impl Database {
             }
         }
         Ok(out)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use secrecy::SecretString;
+
+    use super::*;
+    use crate::db::models::{CertificateFilter, NewCertificate};
+    use crate::pki::ca::{CaSpec, DistributionUrls, create_root};
+    use crate::pki::issue::{IssueSpec, issue_with_new_key};
+    use crate::pki::keys::KeyAlgorithm;
+    use crate::pki::profiles::{Profile, San, Subject};
+    use crate::vault::keywrap::{decrypt_key_pem, encrypt_key_pem};
+
+    /// Passphrase change: CA key and every leaf key are re-wrapped atomically, and the old
+    /// passphrase no longer opens any of them.
+    #[test]
+    fn rewrap_ca_keys_rewraps_ca_and_leaf_keys() {
+        let db = Database::open_in_memory().unwrap();
+        let old = SecretString::from("old-passphrase-0123456789".to_string());
+        let new = SecretString::from("new-passphrase-9876543210".to_string());
+        let spec = CaSpec {
+            subject: Subject::with_common_name("Rewrap Test CA"),
+            algorithm: KeyAlgorithm::EcdsaP256,
+            validity_days: 365,
+            path_len: 0,
+            urls: DistributionUrls::default(),
+        };
+        let ca_material = create_root(&spec).unwrap();
+        let ca = db
+            .insert_ca(&NewCa {
+                kind: CaKind::Root,
+                name: "Rewrap".into(),
+                cert_pem: ca_material.certificate_pem.clone(),
+                key_algo: KeyAlgorithm::EcdsaP256,
+                encrypted_key_pem: Some(encrypt_key_pem(&ca_material.key, &old).unwrap()),
+                parent_ca_id: None,
+                crl_days: 7,
+                crl_url: None,
+                aia_url: None,
+            })
+            .unwrap();
+        let leaf = issue_with_new_key(
+            &IssueSpec {
+                profile: Profile::Server,
+                subject: Subject::default(),
+                sans: vec![San::Dns("rewrap.internal".into())],
+                validity_days: 30,
+                urls: DistributionUrls::default(),
+            },
+            KeyAlgorithm::EcdsaP256,
+            &ca_material.certificate_pem,
+            &ca_material.key,
+        )
+        .unwrap();
+        let leaf_key = leaf.key.as_ref().unwrap();
+        let cert = db
+            .insert_certificate(&NewCertificate {
+                ca_id: ca.id,
+                serial_hex: leaf.serial_hex.clone(),
+                profile: Profile::Server,
+                sans: vec![San::Dns("rewrap.internal".into())],
+                cert_pem: leaf.certificate_pem.clone(),
+                encrypted_key_pem: Some(encrypt_key_pem(leaf_key, &old).unwrap()),
+                csr_pem: None,
+                notes: String::new(),
+            })
+            .unwrap();
+
+        let new_ca_pem = encrypt_key_pem(&ca_material.key, &new).unwrap();
+        let new_leaf_pem = encrypt_key_pem(leaf_key, &new).unwrap();
+        db.rewrap_ca_keys(ca.id, &new_ca_pem, &[(cert.id, new_leaf_pem)])
+            .unwrap();
+
+        let ca_after = db.get_ca(ca.id).unwrap().unwrap();
+        let enc = ca_after.encrypted_key_pem.as_deref().unwrap();
+        assert!(decrypt_key_pem(enc, KeyAlgorithm::EcdsaP256, &old).is_err());
+        let k = decrypt_key_pem(enc, KeyAlgorithm::EcdsaP256, &new).unwrap();
+        assert_eq!(k.pkcs8_der(), ca_material.key.pkcs8_der());
+
+        let certs = db
+            .list_certificates(&CertificateFilter { ca_id: Some(ca.id), ..Default::default() })
+            .unwrap();
+        let enc = certs[0].encrypted_key_pem.as_deref().unwrap();
+        assert!(decrypt_key_pem(enc, KeyAlgorithm::EcdsaP256, &old).is_err());
+        let k = decrypt_key_pem(enc, KeyAlgorithm::EcdsaP256, &new).unwrap();
+        assert_eq!(k.pkcs8_der(), leaf_key.pkcs8_der());
+
+        // A foreign certificate id rolls everything back.
+        let before = db.get_ca(ca.id).unwrap().unwrap().encrypted_key_pem;
+        let bogus = encrypt_key_pem(&ca_material.key, &old).unwrap();
+        assert!(db.rewrap_ca_keys(ca.id, &bogus, &[(9999, String::new())]).is_err());
+        assert_eq!(db.get_ca(ca.id).unwrap().unwrap().encrypted_key_pem, before);
+        assert!(db.audit_csv().unwrap().contains("ca.change_passphrase"));
     }
 }

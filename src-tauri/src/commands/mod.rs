@@ -35,6 +35,7 @@ macro_rules! all_commands {
             $crate::commands::ca::ca_import_intermediate_cert,
             $crate::commands::ca::ca_unlock,
             $crate::commands::ca::ca_lock,
+            $crate::commands::ca::ca_change_passphrase,
             $crate::commands::ca::ca_session,
             $crate::commands::ca::ca_export_cert,
             $crate::commands::ca::ca_update_urls,

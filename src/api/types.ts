@@ -31,7 +31,7 @@ export interface Subject {
 
 export const emptySubject = (): Subject => ({ common_name: "", organization: "", organizational_unit: "", country: "", state: "", locality: "" });
 
-export interface AppInfo { name: string; version: string; license: string }
+export interface AppInfo { name: string; version: string; license: string; repository: string }
 
 export interface OpenInfo {
   path: string;
@@ -179,6 +179,9 @@ export interface RootImportRequest {
   crl_url: string | null;
   aia_url: string | null;
 }
+
+export interface ChangePassphraseRequest { ca_id: number; old_passphrase: string; new_passphrase: string }
+export interface ChangePassphraseResponse { rewrapped_leaf_keys: number }
 
 export interface IntermediateCreateRequest {
   name: string;

@@ -22,8 +22,21 @@ sudo apt install libwebkit2gtk-4.1-dev build-essential curl wget file libxdo-dev
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh     # Rust >= 1.90
 npm install
 npm run tauri dev        # development
-npm run tauri build      # .deb / AppImage / .rpm in src-tauri/target/release/bundle/
+npm run tauri build      # .deb / AppImage / .rpm in src-tauri/target/release/bundle/ (no version bump)
 ```
+
+### Releasing
+
+Every release build bumps the version first so that `apt` recognises the new package:
+
+```sh
+npm run release          # bump patch version, then build all bundles
+npm run release:deb      # bump patch version, then build only the .deb
+npm run bump -- minor    # bump only: patch | minor | major
+```
+
+The version lives in `package.json`, `src-tauri/tauri.conf.json` and `src-tauri/Cargo.toml`;
+`scripts/bump-version.mjs` keeps all three in sync and updates `Cargo.lock`.
 
 ## Tests
 

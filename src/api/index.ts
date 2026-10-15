@@ -28,6 +28,7 @@ export const api = {
   caImportIntermediateCert: (req: T.IntermediateImportRequest) => call<T.CaRecord>("ca_import_intermediate_cert", { req }),
   caUnlock: (caId: number, passphrase: string) => call<T.SessionStatus>("ca_unlock", { caId, passphrase }),
   caLock: () => call<T.SessionStatus>("ca_lock"),
+  caChangePassphrase: (req: T.ChangePassphraseRequest) => call<T.ChangePassphraseResponse>("ca_change_passphrase", { req }),
   caSession: () => call<T.SessionStatus>("ca_session"),
   caExportCert: (caId: number, dest: string, format: "pem" | "der") => call<string>("ca_export_cert", { caId, dest, format }),
   caUpdateUrls: (caId: number, crlUrl: string | null, aiaUrl: string | null, crlDays: number) => call<T.CaRecord>("ca_update_urls", { caId, crlUrl, aiaUrl, crlDays }),

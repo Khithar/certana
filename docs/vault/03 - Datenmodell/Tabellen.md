@@ -20,6 +20,8 @@ revocations   (cert_id PK → certificates, revoked_at, reason, invalidity_date,
                first_crl_id → crls)
 crls          (id, ca_id → cas, crl_number, this_update, next_update, crl_der, exported_path)
 audit_log     (id, ts, actor, host, action, target_type, target_id, details_json)
+              -- action u. a.: ca.create, ca.unlock, ca.update_urls, ca.update_key, ca.change_passphrase,
+              --               root.ceremony, root.import, cert.issue, cert.export, cert.revoke, crl.publish
 ```
 
 - `status = expired` wird über `Database::refresh_expired()` aus `not_after` abgeleitet (App-Start, Dashboard-Refresh).

@@ -1,0 +1,47 @@
+---
+datum: 2026-10-15
+tags: [session, ui, bugfix]
+---
+
+# Session 2026-10-15 – UI-Fix: Select-Dropdown im Dark-Mode
+
+## Getan
+- Befund aus dem manuellen UI-Durchlauf: Im Dialog «Neue Root-CA (Zeremonie)» war das Key-Algorithmus-Dropdown unlesbar (weisse Schrift auf weissem Hintergrund).
+- Ursache: Das native `<option>`-Popup von WebKitGTK erbt im Dark-Mode die helle Schriftfarbe, zeichnet den Popup-Hintergrund aber mit dem System-Schema (hell), weil kein `color-scheme` gesetzt war.
+- Fix in `src/index.css`: `color-scheme: light` auf `:root`, `color-scheme: dark` auf `.dark`; `select, option, optgroup` erhalten explizit `bg-background text-foreground`.
+- Fix in `src/components/ui/index.tsx`: `fieldBase` setzt `text-foreground` explizit (betrifft Input, Textarea, Select).
+- Betrifft damit alle Select-Felder der App (CA-Dialoge, Wizard, Filter, Settings, Widerruf).
+- `npx tsc --noEmit` und `npm run lint` grün.
+
+## Versionierung pro Build (gleiche Session)
+- Frage des Nutzers geklärt: Die beim Ausstellen abgefragte Passphrase ist die der ausstellenden CA; exportierte Schlüssel sind unverschlüsseltes PKCS#8 (Apache/nginx ohne Passwort). Zertifikate werden nicht gelöscht, sondern widerrufen.
+- `scripts/bump-version.mjs` + npm-Skripte `bump`, `release`, `release:deb`; ESLint-Block für `scripts/**/*.mjs` mit Node-Globals. Erster Lauf: 0.1.0 → 0.1.1.
+- ADR [[05 - Entscheidungen/2026-10-15-versionierung-pro-build]], Build-Seite, CLAUDE.md und README (Abschnitt «Releasing») ergänzt.
+
+## Betriebsentscheid CRL (gleiche Session)
+- CRL-Fragen besprochen (Laufzeit, Betrieb ohne Distribution Point, sporadischer Upload, FTP). Entscheid des Nutzers: interner Betrieb **ohne CRL**, keine CRL-URL in den CAs. Upload-Funktionen und Vorwarnung bewusst nicht gebaut. Siehe [[02 - PKI-Konzept/Revocation und CRL#Betrieb ohne CRL]].
+
+## Richtung 1.0.0 (gleiche Session)
+Nutzer will auf 1.0.0 und erstes Release. Ideenliste besprochen; umgesetzt wurden:
+- **Farbschema-Umschalter:** `src/lib/theme.ts` (System/Hell/Dunkel in `localStorage`), Karte «Darstellung» in den Einstellungen, auch ohne offene DB sichtbar.
+- **Repo-URL:** `https://github.com/Khithar/certana` in `src-tauri/Cargo.toml` und Metainfo (homepage + bugtracker). `AppInfo` liefert jetzt `repository` aus `CARGO_PKG_REPOSITORY`.
+- **(6) Passphrase-Texte:** Unlock-Dialog, Wizard-Schlüsselschritt und Ausstellen-Hinweis sagen klar, dass die Passphrase der CA gehört und exportierte Schlüssel unverschlüsselt sind.
+- **(7) Betrieb ohne CRL:** CRL-URL-Hint «optional», Info-Alert in der CRL-Karte ohne URL, «Entsperren nötig»-Warnung nur mit URL, Dashboard «nicht verwendet».
+- **(8) Über Certana:** Karte in den Einstellungen mit Version, Lizenz, Repo-Link (opener-Plugin).
+- **(9) Passphrase der ausstellenden CA ändern:** `Database::rewrap_ca_keys` (Transaktion CA- + Leaf-Schlüssel, Audit `ca.change_passphrase`) mit Unit-Test; Command `ca_change_passphrase` (alte Passphrase prüfen → alle Leaf-Schlüssel mit `decrypt_key_pem_detect` öffnen → neu wrappen → Session aktualisieren); Flow-Test erweitert (falsche alte Passphrase, Wechsel, alte scheitert beim Unlock, neue funktioniert, Export danach). `ChangePassphraseDialog` in `CaDialogs.tsx`, Button im CA-Header.
+- CHANGELOG «Unreleased» ergänzt (Added/Changed/Fixed).
+- Git-Remote `origin` → `https://github.com/Khithar/certana.git` gesetzt (noch nichts gepusht). RustRover: MCP-Server «rustrover» via Auto-Configure (global), `.mcp.json` in `.gitignore`; geteilte Run-Konfigurationen in `.run/` (Tauri dev, Cargo test, Cargo clippy, Frontend checks, Release .deb).
+- Stand: cargo test 23+1+2+2 grün, clippy sauber, tsc/eslint/vitest grün, i18n-Parität en/de geprüft.
+
+## Offen
+- Für 1.0.0 noch offen: Installationstest .deb und kompletter UI-Durchlauf unter Mint, eigenes Icon (Tauri-Platzhalter), Release-Workflow-Secrets (Tauri-Signing, GPG) anlegen oder Signierung für 1.0.0 entfernen, GPG-Fingerprint in README, CHANGELOG auf 1.0.0 datieren, `npm run bump -- major`.
+- Später: Tastaturbedienung/ARIA in Dialogen, Löschen widerrufener/abgelaufener Testzertifikate.
+
+## Geänderte Seiten
+- [[04 - UI/Screens]] (Hinweis zu nativen Form-Controls und `color-scheme`)
+- [[00 - Index]] (Status)
+- [[01 - Architektur/Build und Packaging]] (Release-Befehle, Versionierung)
+- [[05 - Entscheidungen/ADR-Index]] (neuer ADR)
+- [[01 - Architektur/Überblick]] (Command `ca_change_passphrase`)
+- [[03 - Datenmodell/Tabellen]] (Audit-Aktionen)
+- [[02 - PKI-Konzept/Revocation und CRL]] (Betrieb ohne CRL)

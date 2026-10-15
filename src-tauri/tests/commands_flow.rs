@@ -213,6 +213,48 @@ fn command_flow() {
         if c2.is_some() { 2 } else { 1 }
     );
 
+    // --- passphrase change re-wraps CA + leaf keys; session stays usable, old passphrase dies
+    assert_eq!(
+        tauri::async_runtime::block_on(ca_change_passphrase(
+            state.clone(),
+            ChangePassphraseRequest {
+                ca_id: inter.id,
+                old_passphrase: "wrong-old-passphrase-123".into(),
+                new_passphrase: "issuing-passphrase-v2-000000".into(),
+            },
+        ))
+        .unwrap_err()
+        .code,
+        "wrong-passphrase"
+    );
+    let changed = tauri::async_runtime::block_on(ca_change_passphrase(
+        state.clone(),
+        ChangePassphraseRequest {
+            ca_id: inter.id,
+            old_passphrase: "issuing-passphrase-0123456789".into(),
+            new_passphrase: "issuing-passphrase-v2-000000".into(),
+        },
+    ))
+    .unwrap();
+    assert_eq!(changed.rewrapped_leaf_keys, 1);
+    ca_lock(state.clone()).unwrap();
+    assert_eq!(
+        tauri::async_runtime::block_on(ca_unlock(
+            state.clone(),
+            inter.id,
+            "issuing-passphrase-0123456789".into()
+        ))
+        .unwrap_err()
+        .code,
+        "wrong-passphrase"
+    );
+    tauri::async_runtime::block_on(ca_unlock(
+        state.clone(),
+        inter.id,
+        "issuing-passphrase-v2-000000".into(),
+    ))
+    .unwrap();
+
     // --- export package + OpenSSL verification
     let exp = tauri::async_runtime::block_on(cert_export(
         state.clone(),

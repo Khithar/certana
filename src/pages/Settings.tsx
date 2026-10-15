@@ -1,8 +1,11 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 import { useEffect, useState } from "react";
+import { openUrl } from "@tauri-apps/plugin-opener";
 import { useTranslation } from "react-i18next";
 import { api } from "@/api";
 import { SETTING_KEYS } from "@/api/types";
+import type { AppInfo } from "@/api/types";
+import { THEMES, getTheme, setTheme, type Theme } from "@/lib/theme";
 import { pickDirectory, pickFile, pickSavePath } from "@/api/dialogs";
 import { useApp, useCommand } from "@/context/AppContext";
 import { Alert, Button, Card, Checkbox, Field, Input, PageHeader, Select } from "@/components/ui";
@@ -73,6 +76,41 @@ function DatabaseCard() {
   );
 }
 
+function AppearanceCard() {
+  const { t } = useTranslation();
+  const [theme, setThemeState] = useState<Theme>(getTheme());
+  const change = (v: Theme) => { setTheme(v); setThemeState(v); };
+  return (
+    <Card title={t("settings.appearance")}>
+      <div className="grid grid-cols-2 gap-3">
+        <Field label={t("settings.theme")}>
+          <Select value={theme} onChange={(e) => change(e.target.value as Theme)}>
+            {THEMES.map((x) => <option key={x} value={x}>{t(`settings.themes.${x}`)}</option>)}
+          </Select>
+        </Field>
+      </div>
+    </Card>
+  );
+}
+
+function AboutCard() {
+  const { t } = useTranslation();
+  const [info, setInfo] = useState<AppInfo | null>(null);
+  useEffect(() => { void api.appInfo().then(setInfo).catch(() => undefined); }, []);
+  if (!info) return null;
+  return (
+    <Card title={t("settings.about")}>
+      <div className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-1 text-sm">
+        <span className="text-muted-foreground">{t("settings.version")}</span><span>{info.name} {info.version}</span>
+        <span className="text-muted-foreground">{t("settings.license")}</span><span>{info.license}</span>
+        <span className="text-muted-foreground">{t("settings.repository")}</span>
+        <button type="button" className="text-left text-primary hover:underline" onClick={() => void openUrl(info.repository)}>{info.repository}</button>
+      </div>
+      <p className="mt-3 text-xs text-muted-foreground">{t("settings.licenseHint")}</p>
+    </Card>
+  );
+}
+
 export default function Settings() {
   const { t, i18n } = useTranslation();
   const { db, settings, setSetting } = useApp();
@@ -101,6 +139,7 @@ export default function Settings() {
     <div className="space-y-6 p-8">
       <PageHeader title={t("nav.settings")} />
       <DatabaseCard />
+      <AppearanceCard />
       {db && (
         <>
           <Card title={t("settings.subjectDefaults")}>
@@ -138,6 +177,7 @@ export default function Settings() {
           <ErrorBanner error={error} />
         </>
       )}
+      <AboutCard />
     </div>
   );
 }

@@ -9,7 +9,8 @@
     <p>Certana runs an internal certificate authority on your desktop: an offline root CA kept in an encrypted bundle, an issuing CA for daily work, a wizard for Apache/nginx server certificates as well as client, S/MIME and code-signing certificates, revocation with CRL export and expiry monitoring.</p>
   </description>
   <launchable type="desktop-id">Certana.desktop</launchable>
-  <url type="homepage">https://github.com/certana/certana</url>
+  <url type="homepage">https://github.com/Khithar/certana</url>
+  <url type="bugtracker">https://github.com/Khithar/certana/issues</url>
   <content_rating type="oars-1.1" />
   <releases>
     <release version="0.1.0" date="2026-10-15" />

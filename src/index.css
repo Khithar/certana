@@ -4,6 +4,7 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
+  color-scheme: light;
   --background: oklch(0.985 0 0);
   --foreground: oklch(0.2 0.01 260);
   --muted: oklch(0.95 0.005 260);
@@ -14,6 +15,7 @@
   --sidebar: oklch(0.96 0.005 260);
 }
 .dark {
+  color-scheme: dark;
   --background: oklch(0.17 0.01 260);
   --foreground: oklch(0.95 0.005 260);
   --muted: oklch(0.24 0.01 260);
@@ -37,3 +39,5 @@
 
 html, body, #root { height: 100%; }
 body { @apply bg-background text-foreground antialiased; }
+/* Native Select-Popups (WebKitGTK) erben sonst nur die Schriftfarbe, nicht den Hintergrund. */
+select, option, optgroup { @apply bg-background text-foreground; }

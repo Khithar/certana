@@ -23,7 +23,10 @@ Node 22 für das Frontend.
 npm install                      # Frontend-Abhängigkeiten
 npm run tauri dev                # Entwicklung mit Hot-Reload
 cargo test -p certana-core --manifest-path src-tauri/Cargo.toml
-npm run tauri build              # .deb, AppImage, .rpm unter src-tauri/target/release/bundle/
+npm run tauri build              # .deb, AppImage, .rpm unter src-tauri/target/release/bundle/ (ohne Versions-Bump)
+npm run release                  # Version hochzählen (Patch) + tauri build
+npm run release:deb              # Version hochzählen + nur .deb bauen
+npm run bump -- minor            # nur Version erhöhen: patch | minor | major
 ```
 
 ## Bundle-Konfiguration (`src-tauri/tauri.conf.json`)
@@ -38,3 +41,6 @@ npm run tauri build              # .deb, AppImage, .rpm unter src-tauri/target/r
 1. **GitHub Releases**: `.deb`, AppImage, `.rpm`, optional Windows-NSIS, `SHA256SUMS` + GPG-Signatur.
 2. **Flathub**: Manifest unter `packaging/flatpak/`, `org.gnome.Platform` ≥ 49.
 3. Kein Snap (Mint blockiert snapd). Optional später eigenes APT-Repo.
+
+## Versionierung
+Die Version steht in `package.json`, `src-tauri/tauri.conf.json` und `[workspace.package]` in `src-tauri/Cargo.toml`. `scripts/bump-version.mjs` hält alle drei synchron und zieht `Cargo.lock` nach. Entscheidung: [[05 - Entscheidungen/2026-10-15-versionierung-pro-build]].

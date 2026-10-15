@@ -35,7 +35,7 @@ React-UI  ──invoke()──▶  Tauri-Commands (src-tauri/src/commands/*)  �
 |---|---|
 | `db` | `db_default_path`, `db_open`, `db_info`, `db_close`, `db_backup` |
 | `settings` | `settings_all`, `settings_set` |
-| `ca` | `ca_list`, `ca_info`, `ca_create_root` (Zeremonie → Bundle), `ca_import_root`, `ca_open_root_bundle`, `ca_create_intermediate` (Zeremonie), `ca_create_intermediate_csr` / `ca_import_intermediate_cert` (externe Root), `ca_unlock`, `ca_lock`, `ca_session`, `ca_export_cert`, `ca_update_urls` |
+| `ca` | `ca_list`, `ca_info`, `ca_create_root` (Zeremonie → Bundle), `ca_import_root`, `ca_open_root_bundle`, `ca_create_intermediate` (Zeremonie), `ca_create_intermediate_csr` / `ca_import_intermediate_cert` (externe Root), `ca_unlock`, `ca_lock`, `ca_change_passphrase` (CA- und Leaf-Schlüssel in einer Transaktion neu verschlüsseln), `ca_session`, `ca_export_cert`, `ca_update_urls` |
 | `cert` | `cert_profiles`, `cert_list`, `cert_get`, `cert_parse_csr`, `cert_issue`, `cert_export`, `cert_revoke`, `cert_renew`, `cert_update_notes` |
 | `crl` | `crl_publish` (Session-Key), `crl_publish_root` (Bundle), `crl_list`, `crl_export` |
 | `dashboard`, `audit`, `files` | `dashboard_summary`, `audit_recent`, `audit_export_csv`, `read_text_file` (CSR-Dateien, max. 1 MiB) |

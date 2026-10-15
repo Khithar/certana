@@ -248,6 +248,38 @@ export function IntermediateDialog({ open, onClose, roots, onDone }: { open: boo
   );
 }
 
+/* ---------------- Change issuing-CA passphrase ---------------- */
+export function ChangePassphraseDialog({ ca, open, onClose, onDone }: { ca: CaRecord | null; open: boolean; onClose: () => void; onDone: () => void }) {
+  const { t } = useTranslation();
+  const { busy, error, run } = useCommand();
+  const [oldPass, setOldPass] = useState("");
+  const [newPass, setNewPass] = useState("");
+  const [done, setDone] = useState<number | null>(null);
+  if (!ca) return null;
+  const close = () => { setOldPass(""); setNewPass(""); setDone(null); onClose(); };
+  const submit = async () => {
+    const r = await run(() => api.caChangePassphrase({ ca_id: ca.id, old_passphrase: oldPass, new_passphrase: newPass }));
+    if (r) { setDone(r.rewrapped_leaf_keys); setOldPass(""); setNewPass(""); onDone(); }
+  };
+  const ok = oldPass.length > 0 && passphraseOk(newPass) && oldPass !== newPass;
+  return (
+    <Modal open={open} onClose={close} title={t("ca.changePassphrase")} footer={<><Button variant="outline" onClick={close}>{t("common.close")}</Button>{done === null && <Button onClick={submit} loading={busy} disabled={!ok}>{t("ca.changePassphrase")}</Button>}</>}>
+      <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); if (ok && done === null) void submit(); }}>
+        <p className="text-sm text-muted-foreground">{t("ca.changePassphraseHint")}</p>
+        {done === null ? (
+          <>
+            <Field label={t("ca.oldPassphrase")}><Input type="password" value={oldPass} autoFocus onChange={(e) => setOldPass(e.target.value)} autoComplete="current-password" /></Field>
+            <PassphraseInput label={t("ca.newPassphrase")} hint={t("intermediate.passphraseHint")} value={newPass} onChange={setNewPass} confirm />
+          </>
+        ) : (
+          <Alert tone="success">{t("ca.passphraseChanged", { count: done })}</Alert>
+        )}
+        <ErrorBanner error={error} />
+      </form>
+    </Modal>
+  );
+}
+
 /* ---------------- Root CRL ceremony ---------------- */
 export function RootCrlDialog({ ca, open, onClose, onDone }: { ca: CaRecord | null; open: boolean; onClose: () => void; onDone: () => void }) {
   const { t } = useTranslation();

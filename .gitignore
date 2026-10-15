@@ -33,3 +33,6 @@ docs/vault/.obsidian/*
 *.db
 *.db-wal
 *.db-shm
+
+# Lokale MCP-Konfiguration (IDE-Ports wechseln pro Start)
+.mcp.json

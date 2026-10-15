@@ -1,7 +1,7 @@
 {
   "name": "certana",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.1.1",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -10,7 +10,10 @@
     "tauri": "tauri",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "bump": "node scripts/bump-version.mjs",
+    "release": "node scripts/bump-version.mjs && tauri build",
+    "release:deb": "node scripts/bump-version.mjs && tauri build --bundles deb"
   },
   "dependencies": {
     "@tanstack/react-table": "^9.3.1",

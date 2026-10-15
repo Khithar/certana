@@ -69,7 +69,7 @@ export default function Dashboard() {
                       <td className="py-2 font-medium"><Link to={`/cas?ca=${ca.id}`} className="hover:underline">{ca.name}</Link></td>
                       <td className="py-2"><Badge tone={ca.kind === "root" ? "blue" : "neutral"}>{t(`ca.kinds.${ca.kind}`)}</Badge></td>
                       <td className="py-2">{fmtDate(ca.not_after, i18n.language)}</td>
-                      <td className="py-2">{latest_crl ? <Badge tone={crl_expires_soon ? "amber" : "green"}>#{latest_crl.crl_number} · {fmtDate(latest_crl.next_update, i18n.language)}</Badge> : <Badge tone="neutral">{t("crl.none")}</Badge>}</td>
+                      <td className="py-2">{latest_crl ? <Badge tone={crl_expires_soon ? "amber" : "green"}>#{latest_crl.crl_number} · {fmtDate(latest_crl.next_update, i18n.language)}</Badge> : ca.crl_url ? <Badge tone="neutral">{t("crl.none")}</Badge> : <span className="text-muted-foreground">{t("crl.notUsed")}</span>}</td>
                       <td className="py-2">{ca.kind === "root" ? <span className="text-muted-foreground">{t("ca.offline")}</span> : unlocked ? <Badge tone="green">{t("session.unlocked")}</Badge> : <Badge tone="neutral">{t("session.locked")}</Badge>}</td>
                     </tr>
                   ))}

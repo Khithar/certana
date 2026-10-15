@@ -35,7 +35,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(({ classN
 Button.displayName = "Button";
 
 /* ---------- Inputs ---------- */
-const fieldBase = "w-full rounded-md border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-2 focus:outline-primary disabled:opacity-50";
+const fieldBase = "w-full rounded-md border border-border bg-background text-foreground px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-2 focus:outline-primary disabled:opacity-50";
 export const Input = React.forwardRef<HTMLInputElement, React.InputHTMLAttributes<HTMLInputElement>>(({ className, ...props }, ref) => (
   <input ref={ref} className={cn(fieldBase, "h-9", className)} {...props} />
 ));

@@ -468,6 +468,78 @@ pub async fn ca_unlock(
     .map_err(|e| CommandError::internal(e.to_string()))?
 }
 
+#[derive(Debug, Deserialize)]
+pub struct ChangePassphraseRequest {
+    pub ca_id: i64,
+    pub old_passphrase: String,
+    pub new_passphrase: String,
+}
+
+#[derive(Debug, Serialize)]
+pub struct ChangePassphraseResponse {
+    /// Number of leaf keys that were re-wrapped together with the CA key.
+    pub rewrapped_leaf_keys: usize,
+}
+
+/// Change the passphrase of an issuing CA. The CA key and every leaf key stored for this CA are
+/// wrapped with the CA passphrase, so all of them are decrypted with the old and re-encrypted
+/// with the new passphrase in one transaction. An unlocked session for this CA is updated.
+#[tauri::command]
+pub async fn ca_change_passphrase(
+    state: State<'_, AppState>,
+    req: ChangePassphraseRequest,
+) -> CmdResult<ChangePassphraseResponse> {
+    let inner = state.0.clone();
+    tauri::async_runtime::spawn_blocking(move || {
+        let old = SecretString::from(req.old_passphrase);
+        let new = SecretString::from(req.new_passphrase);
+        check_passphrase_strength(&new)?;
+        let (ca, certs) = inner.with_db(|db| {
+            let ca = db
+                .get_ca(req.ca_id)?
+                .ok_or_else(|| CommandError::invalid("CA not found"))?;
+            let certs = db.list_certificates(&certana_core::db::models::CertificateFilter {
+                ca_id: Some(req.ca_id),
+                ..Default::default()
+            })?;
+            Ok((ca, certs))
+        })?;
+        let encrypted = ca
+            .encrypted_key_pem
+            .as_deref()
+            .ok_or_else(|| CommandError::invalid("this CA has no stored key (offline root)"))?;
+        let ca_key = decrypt_key_pem(encrypted, ca.key_algo, &old)
+            .map_err(|_| CommandError::new("wrong-passphrase", "wrong passphrase"))?;
+        let new_ca_pem = encrypt_key_pem(&ca_key, &new)?;
+        let mut leaf_keys = Vec::new();
+        for cert in certs.iter().filter(|c| c.encrypted_key_pem.is_some()) {
+            let enc = cert.encrypted_key_pem.as_deref().unwrap_or_default();
+            let key = decrypt_key_pem_detect(enc, &old).map_err(|_| {
+                CommandError::new(
+                    "vault",
+                    format!(
+                        "leaf key of certificate {} cannot be opened with the old passphrase",
+                        cert.id
+                    ),
+                )
+            })?;
+            leaf_keys.push((cert.id, encrypt_key_pem(&key, &new)?));
+        }
+        inner.with_db(|db| Ok(db.rewrap_ca_keys(req.ca_id, &new_ca_pem, &leaf_keys)?))?;
+        if let Ok(mut guard) = inner.session.lock()
+            && let Some(sess) = guard.as_mut().filter(|s| s.ca_id == req.ca_id)
+        {
+            sess.passphrase = new;
+            sess.last_used = Instant::now();
+        }
+        Ok(ChangePassphraseResponse {
+            rewrapped_leaf_keys: leaf_keys.len(),
+        })
+    })
+    .await
+    .map_err(|e| CommandError::internal(e.to_string()))?
+}
+
 #[tauri::command]
 pub fn ca_lock(state: State<'_, AppState>) -> CmdResult<SessionStatus> {
     state.0.lock_session();

@@ -6,7 +6,7 @@ tags: [type/concept, area/ui]
 
 # Screens und Flüsse
 
-Zurück zum [[00 - Index]]. Stack: React 19, Tailwind 4, eigene shadcn-artige Komponenten (`src/components/ui`), react-router 7 (HashRouter), react-i18next (en Default, de). Dark/Light folgt dem System.
+Zurück zum [[00 - Index]]. Stack: React 19, Tailwind 4, eigene shadcn-artige Komponenten (`src/components/ui`), react-router 7 (HashRouter), react-i18next (en Default, de). Dark/Light folgt dem System; `:root`/`.dark` setzen `color-scheme`, damit native Form-Controls (Select-Popups in WebKitGTK) zum Theme passen, und `select, option` haben explizit Theme-Farben.
 
 ## Umsetzung (Stand 2026-10-15)
 
@@ -20,7 +20,7 @@ Zurück zum [[00 - Index]]. Stack: React 19, Tailwind 4, eigene shadcn-artige Ko
 | `src/pages/Certificates.tsx` + `IssueWizard.tsx` | Tabelle mit Suche/Filter, Wizard Profil → Identität → Schlüssel (generieren/CSR) → Prüfen → Ausstellen. |
 | `src/pages/CertificateDetail.tsx` | Details, Notizen, Textdump, Export-Dialog (Key/DER/PKCS#12, Snippets nginx/Apache), Widerruf, Erneuerung. |
 | `src/pages/Revocations.tsx` | Widerrufe pro CA, CRL-Verlauf, veröffentlichen/exportieren. |
-| `src/pages/Settings.tsx` | DB öffnen/anlegen/wechseln/Backup, Subject-Vorgaben, Export-/CRL-Verzeichnis, Auto-Lock, Ablaufwarnung, Sprache, Audit-CSV. |
+| `src/pages/Settings.tsx` | DB öffnen/anlegen/wechseln/Backup, Darstellung (Farbschema System/Hell/Dunkel, `localStorage`, `src/lib/theme.ts`), Subject-Vorgaben, Export-/CRL-Verzeichnis, Auto-Lock, Ablaufwarnung, Sprache, Audit-CSV, «Über Certana» (Version, Lizenz, Repo-Link via opener-Plugin). |
 | `src/api/` | `types.ts` (DTO-Spiegel), `index.ts` (invoke-Wrapper), `dialogs.ts` (Dialog/Clipboard/Notification-Plugins). |
 
 ## Navigation (Sidebar)
@@ -29,7 +29,9 @@ Zurück zum [[00 - Index]]. Stack: React 19, Tailwind 4, eigene shadcn-artige Ko
 2. **CAs** – Root/Intermediates; Root erzeugen (Zeremonie), Root importieren, Intermediate erzeugen/signieren, Root exportieren, CRL erneuern, entsperren/sperren.
 3. **Zertifikate** – Tabelle mit Suche/Filter (Profil, Status, Ablauf), Detail (Textdump, Extensions, Kette), Aktionen: exportieren, erneuern, widerrufen, Notizen.
 4. **Widerrufe / CRL** – Revocation-Liste, CRL-Historie, Export-Pfad.
-5. **Einstellungen** – DB öffnen/anlegen, Export-Verzeichnis, CRL/AIA-URLs, Subject-Defaults (O, OU, C, ST, L), Auto-Lock, Sprache, Benachrichtigungen, Backup.
+5. **Einstellungen** – DB öffnen/anlegen, Farbschema, Export-Verzeichnis, CRL/AIA-URLs, Subject-Defaults (O, OU, C, ST, L), Auto-Lock, Sprache, Benachrichtigungen, Backup, Über Certana.
+
+CA-Detail (`Cas.tsx`): ausstellende CAs mit gespeichertem Schlüssel haben «Passphrase ändern» (`ChangePassphraseDialog` in `CaDialogs.tsx`). Ohne CRL-URL zeigt die CRL-Karte einen Hinweis, dass Clients keinen Widerruf prüfen; das Dashboard zeigt dann «nicht verwendet» statt einer fehlenden CRL.
 
 ## Wizard «Neues Zertifikat»
 
