@@ -47,7 +47,7 @@ Nutzer will auf 1.0.0 und erstes Release. Ideenliste besprochen; umgesetzt wurde
 
 ## Icon und Installationstest (gleiche Session)
 - Nutzer hat das .deb unter Linux Mint installiert: funktioniert, Startmenü-Eintrag vorhanden.
-- Eigenes Icon: Siegel mit gezacktem Rand, Häkchen und Bändern auf blauem Verlauf (Primärfarbe der App). Quelle `packaging/icon/certana.svg`; da kein rsvg-convert vorhanden, Hintergrund per ImageMagick gerendert und mit dem Vordergrund komponiert (`certana-1024.png`). Icon-Satz via `npm run tauri icon packaging/icon/certana-1024.png` → `src-tauri/icons/`.
+- Eigenes Icon, zweiter Entwurf auf Wunsch «kreativer, mehrfarbig»: cremefarbene Urkunde mit Textzeilen, bernsteinfarbenes Wachssiegel mit weissem Häkchen, türkise Bänder, Indigo-Verlauf. Quelle `packaging/icon/certana.svg`; da kein rsvg-convert vorhanden, Hintergrund per ImageMagick gerendert und mit dem Vordergrund komponiert (`certana-1024.png`). Icon-Satz via `npm run tauri icon packaging/icon/certana-1024.png` → `src-tauri/icons/`.
 
 ## Offen
 - Noch offen: Release-Signierung (GPG-Secret, Fingerprint in README), Windows-Durchlauf. Icon landet mit dem nächsten Release in den Paketen.
