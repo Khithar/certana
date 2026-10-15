@@ -27,7 +27,7 @@
     "active": true,
     "targets": ["deb", "appimage", "rpm", "nsis"],
     "category": "Utility",
-    "shortDescription": "Internal certificate authority for Linux desktops",
+    "shortDescription": "Internal certificate authority for your desktop",
     "longDescription": "Certana manages an internal certificate authority: offline root CA, intermediate CA, certificate issuing wizard for Apache/nginx, client, S/MIME and code-signing certificates, revocation with CRL export and expiry monitoring.",
     "license": "GPL-3.0-or-later",
     "licenseFile": "../LICENSE",

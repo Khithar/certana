@@ -1,11 +1,12 @@
 # Certana
 
-**Certana** is a native Linux desktop application for running your own internal Certificate Authority:
+**Certana** is a native desktop application for running your own internal Certificate Authority
+(Linux first, Windows installer included, macOS builds from source):
 create an offline root CA (or import one), operate an intermediate CA, issue server certificates for
 Apache/nginx as well as client, S/MIME and code-signing certificates, manage renewals, revoke and
 publish CRLs, and keep an eye on expiry dates.
 
-- Built with Rust + Tauri 2, React and SQLite – ships as a small native binary (`.deb` ≈ 4.5 MiB, AppImage, `.rpm`; Windows installer experimental).
+- Built with Rust + Tauri 2, React and SQLite – ships as a small native binary (`.deb` ≈ 4.5 MiB, AppImage, `.rpm`, Windows `.exe` installer).
 - Private keys never leave the Rust process; the root key is stored only in an encrypted offline bundle, never in the database.
 - Pure-Rust cryptography (rcgen, pkcs8, p12-keystore) – no OpenSSL dependency, but every file stays OpenSSL-compatible
   (`openssl verify`, `x509`, `pkey`, `pkcs12`, `crl` are part of the test suite).
@@ -42,8 +43,14 @@ sudo dnf install ./Certana-1.0.0-1.x86_64.rpm
 chmod +x Certana_1.0.0_amd64.AppImage && ./Certana_1.0.0_amd64.AppImage
 ```
 
-Certana appears in the start menu under *Utilities*. Data is stored in `~/.local/share/certana/certana.db`
-(configurable; a database on a network share switches to a shared mode with a writer lock).
+**Windows:** run `Certana_1.0.0_x64-setup.exe` (needs the WebView2 runtime, which the installer fetches if
+missing). The Windows build is produced by CI and has not been through the same manual testing as the Linux
+packages yet. Note that exported private keys are written with restrictive `0600` permissions on Linux only; on
+Windows they inherit the permissions of the target folder.
+
+Certana appears in the start menu under *Utilities*. Data is stored in `~/.local/share/certana/certana.db` on
+Linux and `%APPDATA%\certana\certana.db` on Windows (configurable; a database on a network share switches to a
+shared mode with a writer lock).
 
 ## Quick start
 
@@ -62,7 +69,8 @@ Renewal, revocation, CRL publication, expiry warnings and the audit log live in 
 
 ## Building from source
 
-Linux Mint 22 / Ubuntu 24.04:
+Linux Mint 22 / Ubuntu 24.04 (Windows: install Rust, Node 22 and the Visual Studio C++ build tools, then run
+the same `npm` commands; `npm run tauri build -- --bundles nsis` produces the installer):
 
 ```sh
 sudo apt install libwebkit2gtk-4.1-dev build-essential curl wget file libxdo-dev \
