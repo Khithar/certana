@@ -4,6 +4,8 @@ All notable changes to Certana are documented here. Format follows Keep a Change
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-10-15
+
 ### Fixed
 - Certificate details showed «Invalid Date» for validity: `CertificateInfo` now serialises dates as RFC 3339.
 - A crashed or killed Certana left the database read-only for ten minutes; a lock whose process no longer

@@ -34,16 +34,16 @@ Download the package for your distribution from the [Releases](https://github.co
 
 ```sh
 # Debian / Ubuntu / Linux Mint
-sudo apt install ./Certana_1.0.0_amd64.deb      # pulls in libwebkit2gtk-4.1-0 and libgtk-3-0
+sudo apt install ./Certana_1.0.1_amd64.deb      # pulls in libwebkit2gtk-4.1-0 and libgtk-3-0
 
 # Fedora / RHEL
-sudo dnf install ./Certana-1.0.0-1.x86_64.rpm
+sudo dnf install ./Certana-1.0.1-1.x86_64.rpm
 
 # Any distribution
-chmod +x Certana_1.0.0_amd64.AppImage && ./Certana_1.0.0_amd64.AppImage
+chmod +x Certana_1.0.1_amd64.AppImage && ./Certana_1.0.1_amd64.AppImage
 ```
 
-**Windows:** run `Certana_1.0.0_x64-setup.exe` (needs the WebView2 runtime, which the installer fetches if
+**Windows:** run `Certana_1.0.1_x64-setup.exe` (needs the WebView2 runtime, which the installer fetches if
 missing). The Windows build is produced by CI and has not been through the same manual testing as the Linux
 packages yet. Note that exported private keys are written with restrictive `0600` permissions on Linux only; on
 Windows they inherit the permissions of the target folder.
