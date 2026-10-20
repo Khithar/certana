@@ -8,7 +8,7 @@ tags: [type/moc, status/active]
 
 Certana ist eine native Linux-Desktop-Anwendung (Rust + Tauri 2) zum Betrieb einer **internen Certificate Authority**: Root-CA offline, Intermediate-CA für den Tagesbetrieb, Wizard für Server-, Client-, S/MIME- und Code-Signing-Zertifikate, Revocation mit CRL, Export und Ablaufüberwachung. Open Source unter GPL-3.0-or-later, verteilt als `.deb`, AppImage und Flatpak.
 
-**Repo:** `/home/palu/Documents/intellij/certana` · **Stand:** siehe [[99 - Sessions/2026-10-15 Bootstrap]]
+**Repo:** github.com/Khithar/certana · **Stand:** siehe [[99 - Sessions/2026-10-15 Bootstrap]]
 
 **Konventionen dieses Vaults:** [[Konventionen]] · **Begriffe:** [[Glossar]]
 
