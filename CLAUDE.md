@@ -82,6 +82,7 @@ Cargo liegt unter `~/.cargo/bin` (rustup). Build-Systempakete siehe `docs/vault/
 
 Phasen 1–7 abgeschlossen (Bootstrap, Core-PKI, DB-Schicht, Commands, komplette UI). Phase 8 (Packaging/CI) weitgehend
 fertig; 1.0.1 ist veröffentlicht (github.com/Khithar/certana, Release per Tag `v*`). Installationstest unter Mint bestanden, eigenes Icon
-(`packaging/icon/`). Offen: Release-Signierung (GPG/Tauri-Secrets), Windows-Durchlauf. Phasenplan und Status: `docs/vault/00 - Index.md`.
+(`packaging/icon/`). Mehrbenutzerbetrieb auf Freigabe (Lock-Heartbeat, `lock_lost`) seit 2026-10-20, siehe
+`docs/vault/03 - Datenmodell/Shared-SQLite-Betrieb.md`. Offen: Release-Signierung (GPG/Tauri-Secrets), Windows-Durchlauf, Praxistest auf echter Freigabe. Phasenplan und Status: `docs/vault/00 - Index.md`.
 Wichtig: Schlüssel immer über `pki::keys::PrivateKey` erzeugen/laden (normalisiert auf PKCS#8 v1, sonst liest OpenSSL
 Ed25519-Keys nicht).

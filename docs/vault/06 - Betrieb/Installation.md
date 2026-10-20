@@ -35,5 +35,11 @@ chmod +x Certana_<version>_amd64.AppImage && ./Certana_<version>_amd64.AppImage
 
 ## Daten
 
-- DB: `~/.local/share/certana/certana.db` (änderbar in den Einstellungen).
+- DB: `~/.local/share/certana/certana.db` (änderbar in den Einstellungen; Default per `CERTANA_DATA_DIR` verschiebbar).
 - Root-Bundle: frei gewählter Ort, empfohlen USB-Stick; **nicht** im DB-Ordner.
+- Zuletzt geöffneter DB-Pfad: `localStorage` des Webviews unter `~/.local/share/io.github.certana/`.
+- Neustart «from scratch»: App beenden, `~/.local/share/certana` und das Root-Bundle löschen (optional `~/.local/share/io.github.certana`).
+
+## Mehrere Benutzer (Freigabe)
+
+Datenbank auf eine SMB/NFS-Freigabe legen und auf jedem Arbeitsplatz unter Einstellungen → Datenbank dieselbe Datei öffnen. Certana erkennt das Netzlaufwerk und arbeitet im geteilten Modus (ein Schreiber, weitere lesend). Details und was alles auf der Freigabe liegt: [[03 - Datenmodell/Shared-SQLite-Betrieb]].

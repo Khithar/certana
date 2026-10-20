@@ -24,15 +24,16 @@ export function NoDatabase() {
 
 function DatabaseCard() {
   const { t } = useTranslation();
-  const { db, openDb, closeDb, error } = useApp();
+  const { db, lastDbPath, openDb, closeDb, error } = useApp();
   const { busy, error: cmdError, run } = useCommand();
   const [path, setPath] = useState("");
   const [forceShared, setForceShared] = useState(false);
   const [backupDone, setBackupDone] = useState<string | null>(null);
   useEffect(() => {
     if (db) setPath(db.path);
+    else if (lastDbPath) setPath(lastDbPath);
     else void api.dbDefaultPath().then(setPath);
-  }, [db]);
+  }, [db, lastDbPath]);
 
   const choose = async () => {
     const p = await pickSavePath(t("db.choose"), path, [{ name: "SQLite", extensions: ["db"] }]);
@@ -55,8 +56,9 @@ function DatabaseCard() {
         {db?.read_only && db.held_by && (
           <Alert tone="warning" title={t("db.readOnly")}>{t("db.heldBy", { user: db.held_by.user, host: db.held_by.host })}</Alert>
         )}
-        {db?.mode === "shared" && <Alert tone="info">{t("db.sharedHint")}</Alert>}
-        <Field label={t("db.path")}>
+        {db?.lock_lost && <Alert tone="warning" title={t("db.lockLostTitle")}>{t("db.lockLost")}</Alert>}
+        {db?.mode === "shared" ? <Alert tone="info">{t("db.sharedHint")}</Alert> : <Alert tone="info" title={t("db.teamTitle")}>{t("db.teamHint")}</Alert>}
+        <Field label={t("db.path")} hint={t("db.pathHint")}>
           <div className="flex gap-2">
             <Input value={path} onChange={(e) => setPath(e.target.value)} />
             <Button variant="outline" onClick={chooseExisting}>{t("common.browse")}</Button>

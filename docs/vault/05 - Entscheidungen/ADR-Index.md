@@ -15,3 +15,4 @@ Zurück zum [[00 - Index]]. Format siehe [[Konventionen]].
 | 2026-10-15 | [[05 - Entscheidungen/2026-10-15-lizenz-gpl3]] | accepted |
 | 2026-10-15 | [[05 - Entscheidungen/2026-10-15-v1-umfang]] | accepted |
 | 2026-10-15 | [[05 - Entscheidungen/2026-10-15-versionierung-pro-build]] | accepted |
+| 2026-10-20 | [[05 - Entscheidungen/2026-10-20-shared-db-lockfile-heartbeat]] | accepted |

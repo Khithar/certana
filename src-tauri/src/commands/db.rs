@@ -34,7 +34,7 @@ pub fn db_open(
             tracing::info!(expired, "marked certificates as expired");
         }
     }
-    let info = db.info().clone();
+    let info = db.info();
     state.0.lock_session();
     *state.0.db()? = Some(db);
     tracing::info!(path = %info.path.display(), mode = ?info.mode, read_only = info.read_only, "database opened");
@@ -43,7 +43,7 @@ pub fn db_open(
 
 #[tauri::command]
 pub fn db_info(state: State<'_, AppState>) -> CmdResult<Option<OpenInfo>> {
-    Ok(state.0.db()?.as_ref().map(|d| d.info().clone()))
+    Ok(state.0.db()?.as_ref().map(|d| d.info()))
 }
 
 #[tauri::command]

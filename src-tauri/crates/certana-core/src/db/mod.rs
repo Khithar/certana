@@ -2,8 +2,10 @@
 //! SQLite persistence. One `Database` per opened file; all key columns hold PBES2-encrypted PEM.
 //!
 //! Sharing rules (see vault «Shared-SQLite-Betrieb»): on a local file system WAL is used; on a
-//! network mount Certana switches to rollback journal + exclusive locking and guards the file
-//! with its own lock file so only one writer exists at a time.
+//! network mount Certana switches to a rollback journal with `synchronous=FULL`. In both modes a
+//! heartbeat-refreshed lock file (`db::lock`) guarantees a single writer; further instances open
+//! read-only. SQLite's own byte-range locks are only a safety net because they are unreliable on
+//! SMB/NFS.
 
 pub mod audit;
 pub mod fs;
@@ -36,7 +38,7 @@ pub fn migrations() -> Migrations<'static> {
 pub enum StorageMode {
     /// Local file system: WAL journal, normal locking.
     Local,
-    /// Network share (cifs/nfs/sshfs …): DELETE journal, exclusive locking, lock file.
+    /// Network share (cifs/nfs/sshfs …): DELETE journal, synchronous FULL.
     Shared,
 }
 
@@ -48,6 +50,8 @@ pub struct OpenInfo {
     /// Who holds the write lock when we had to fall back to read-only.
     pub held_by: Option<LockInfo>,
     pub schema_version: u32,
+    /// Another instance took over our write lock (machine suspended too long); writes are refused.
+    pub lock_lost: bool,
 }
 
 #[derive(Debug, Clone, Default)]
@@ -109,7 +113,6 @@ impl Database {
                     conn.pragma_update(None, "synchronous", "NORMAL")?;
                 }
                 StorageMode::Shared => {
-                    conn.pragma_update(None, "locking_mode", "EXCLUSIVE")?;
                     conn.pragma_update(None, "journal_mode", "DELETE")?;
                     conn.pragma_update(None, "synchronous", "FULL")?;
                 }
@@ -126,6 +129,7 @@ impl Database {
                 read_only,
                 held_by,
                 schema_version,
+                lock_lost: false,
             },
             _lock: lock,
         })
@@ -144,13 +148,22 @@ impl Database {
                 read_only: false,
                 held_by: None,
                 schema_version: 1,
+                lock_lost: false,
             },
             _lock: None,
         })
     }
 
-    pub fn info(&self) -> &OpenInfo {
-        &self.info
+    /// Current open state, including whether the write lock has meanwhile been lost.
+    pub fn info(&self) -> OpenInfo {
+        OpenInfo {
+            lock_lost: self.write_lock_lost(),
+            ..self.info.clone()
+        }
+    }
+
+    pub fn write_lock_lost(&self) -> bool {
+        self._lock.as_ref().is_some_and(|l| l.is_lost())
     }
 
     pub fn is_read_only(&self) -> bool {
@@ -164,6 +177,11 @@ impl Database {
     pub(crate) fn ensure_writable(&self) -> Result<()> {
         if self.info.read_only {
             return Err(CertanaError::Invalid("database is open read-only".into()));
+        }
+        if self.write_lock_lost() {
+            return Err(CertanaError::Invalid(
+                "another Certana instance took over the write lock – reopen the database".into(),
+            ));
         }
         Ok(())
     }
@@ -224,6 +242,12 @@ mod tests {
             .pragma_query_value(None, "journal_mode", |r| r.get(0))
             .unwrap();
         assert_eq!(jm, "delete");
+        // Readers are not blocked by the writer: no exclusive SQLite lock in shared mode.
+        let lm: String = first
+            .conn()
+            .pragma_query_value(None, "locking_mode", |r| r.get(0))
+            .unwrap();
+        assert_eq!(lm, "normal");
         assert!(lock::lock_path(&path).exists());
         // Simulate a different process holding the lock: rewrite the lock file with another pid.
         let mut other = lock::read_lock(&lock::lock_path(&path)).unwrap().unwrap();
@@ -255,6 +279,7 @@ mod tests {
             user: "nobody".into(),
             pid: 999_999,
             acquired_at: ::time::OffsetDateTime::now_utc() - ::time::Duration::minutes(30),
+            refreshed_at: None,
         };
         lock::write_lock(&lock::lock_path(&path), &stale).unwrap();
         let db = Database::open(&path, OpenOptions::default()).unwrap();
@@ -283,6 +308,7 @@ mod tests {
             user: "someone".into(),
             pid: dead_pid,
             acquired_at: ::time::OffsetDateTime::now_utc(),
+            refreshed_at: None,
         };
         lock::write_lock(&lock::lock_path(&path), &crashed).unwrap();
         let db = Database::open(&path, OpenOptions::default()).unwrap();

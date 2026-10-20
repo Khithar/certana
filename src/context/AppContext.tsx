@@ -12,6 +12,8 @@ interface AppCtx {
   session: SessionStatus;
   cas: CaRecord[];
   settings: Record<string, string>;
+  /** Path of the last database this machine had open (also when reopening it failed). */
+  lastDbPath: string | null;
   loading: boolean;
   error: CommandError | null;
   refresh: () => Promise<void>;
@@ -27,6 +29,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = React.useState<SessionStatus>({ unlocked_ca_id: null, idle_seconds_left: null });
   const [cas, setCas] = React.useState<CaRecord[]>([]);
   const [settings, setSettings] = React.useState<Record<string, string>>({});
+  const [lastDbPath, setLastDbPath] = React.useState<string | null>(null);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<CommandError | null>(null);
 
@@ -46,7 +49,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         setCas([]);
         setSettings({});
       }
-      setError(null);
     } catch (e) {
       setError(asCommandError(e));
     }
@@ -57,6 +59,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       setError(null);
       try {
         const info = await api.dbOpen(path, forceShared);
+        setLastDbPath(info.path);
         try {
           localStorage.setItem("certana.lastDb", info.path);
         } catch {
@@ -85,7 +88,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     [refresh],
   );
 
-  // On start: reopen the last database (or the default one if it exists).
+  // On start: reopen the last database. If that fails (share not mounted, file moved) the
+  // database screen shows the error and keeps the last path instead of silently offering the
+  // local default, which would create a second, empty database.
   React.useEffect(() => {
     (async () => {
       try {
@@ -96,10 +101,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           /* ignore */
         }
         if (last) {
+          setLastDbPath(last);
           try {
             await api.dbOpen(last, false);
-          } catch {
-            /* fall through to the settings screen */
+          } catch (e) {
+            setError(asCommandError(e));
           }
         }
       } finally {
@@ -109,12 +115,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     })();
   }, [refresh]);
 
-  // Poll the session so auto-lock is reflected in the UI.
+  // Poll session and database state so auto-lock and a lost write lock show up in the UI.
   React.useEffect(() => {
     if (!db) return;
     const id = setInterval(async () => {
       try {
-        setSession(await api.caSession());
+        const [s, info] = await Promise.all([api.caSession(), api.dbInfo()]);
+        setSession(s);
+        setDb(info);
       } catch {
         /* ignore */
       }
@@ -122,7 +130,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     return () => clearInterval(id);
   }, [db]);
 
-  return <Ctx.Provider value={{ db, session, cas, settings, loading, error, refresh, openDb, closeDb, setSetting }}>{children}</Ctx.Provider>;
+  return <Ctx.Provider value={{ db, session, cas, settings, lastDbPath, loading, error, refresh, openDb, closeDb, setSetting }}>{children}</Ctx.Provider>;
 }
 
 export function useApp() {

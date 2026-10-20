@@ -37,8 +37,10 @@ export interface OpenInfo {
   path: string;
   mode: "local" | "shared";
   read_only: boolean;
-  held_by: { host: string; user: string; pid: number; acquired_at: string } | null;
+  held_by: { host: string; user: string; pid: number; acquired_at: string; refreshed_at: string | null } | null;
   schema_version: number;
+  /** Another instance took over the write lock (machine suspended too long); reopen to write again. */
+  lock_lost: boolean;
 }
 
 export interface CaRecord {

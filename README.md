@@ -50,7 +50,9 @@ Windows they inherit the permissions of the target folder.
 
 Certana appears in the start menu under *Utilities*. Data is stored in `~/.local/share/certana/certana.db` on
 Linux and `%APPDATA%\certana\certana.db` on Windows (configurable; a database on a network share switches to a
-shared mode with a writer lock).
+shared mode: one workstation writes, the others open read-only; the writer refreshes its lock file every two
+minutes). For a team, put the database on an SMB/NFS share and open the same file from every workstation; set
+`CERTANA_DATA_DIR` to change the default location for all users.
 
 ## Quick start
 
