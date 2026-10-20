@@ -34,6 +34,9 @@ function DatabaseCard() {
     else if (lastDbPath) setPath(lastDbPath);
     else void api.dbDefaultPath().then(setPath);
   }, [db, lastDbPath]);
+  // GNOME/gvfs mounts (file manager «Connect to server») reject random-access writes; the backend
+  // refuses them too, this just explains it before the user tries.
+  const isGvfs = /\/gvfs\//.test(path);
 
   const choose = async () => {
     const p = await pickSavePath(t("db.choose"), path, [{ name: "SQLite", extensions: ["db"] }]);
@@ -66,8 +69,9 @@ function DatabaseCard() {
           </div>
         </Field>
         <Checkbox label={t("db.forceShared")} checked={forceShared} onChange={setForceShared} />
+        {isGvfs && <Alert tone="error" title={t("db.gvfsTitle")}>{t("db.gvfsHint")}</Alert>}
         <div className="flex flex-wrap gap-2">
-          <Button loading={busy} onClick={() => run(() => openDb(path, forceShared))}>{db ? t("db.switch") : t("db.open")}</Button>
+          <Button loading={busy} disabled={isGvfs} onClick={() => run(() => openDb(path, forceShared))}>{db ? t("db.switch") : t("db.open")}</Button>
           {db && <Button variant="outline" onClick={() => run(closeDb)}>{t("db.close")}</Button>}
           {db && <Button variant="outline" onClick={backup}>{t("db.backup")}</Button>}
         </div>

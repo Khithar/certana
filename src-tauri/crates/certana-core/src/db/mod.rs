@@ -75,6 +75,14 @@ impl Database {
         if let Some(parent) = path.parent().filter(|p| !p.as_os_str().is_empty()) {
             std::fs::create_dir_all(parent)?;
         }
+        if fs::is_gvfs_path(&path) {
+            return Err(CertanaError::Invalid(format!(
+                "{} lies on a gvfs mount (file manager «Connect to server»), which does not support \
+                 random-access writes; SQLite cannot work there. Mount the share with cifs or nfs \
+                 (e.g. via /etc/fstab) and open the database from that mount point.",
+                path.display()
+            )));
+        }
         let mode = if options.force_shared || fs::is_network_path(&path) {
             StorageMode::Shared
         } else {

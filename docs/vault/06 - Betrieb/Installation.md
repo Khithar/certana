@@ -43,3 +43,22 @@ chmod +x Certana_<version>_amd64.AppImage && ./Certana_<version>_amd64.AppImage
 ## Mehrere Benutzer (Freigabe)
 
 Datenbank auf eine SMB/NFS-Freigabe legen und auf jedem Arbeitsplatz unter Einstellungen → Datenbank dieselbe Datei öffnen. Certana erkennt das Netzlaufwerk und arbeitet im geteilten Modus (ein Schreiber, weitere lesend). Details und was alles auf der Freigabe liegt: [[03 - Datenmodell/Shared-SQLite-Betrieb]].
+
+**Wichtig:** Die Freigabe muss als Kernel-Mount (cifs/nfs) eingebunden sein. Der Weg über den Dateimanager («Mit Server verbinden», Pfad `/run/user/…/gvfs/…`) funktioniert nicht, weil gvfs keine wahlfreien Schreibzugriffe unterstützt; Certana lehnt solche Pfade ab.
+
+Beispiel SMB unter Linux Mint:
+
+```sh
+sudo apt install cifs-utils
+sudo mkdir -p /mnt/pki
+sudo install -m 600 /dev/null /etc/cifs-pki.cred   # Inhalt: username=…, password=…, domain=…
+sudo mount -t cifs //nas02.example/technik /mnt/pki -o credentials=/etc/cifs-pki.cred,uid=$(id -u),gid=$(id -g),file_mode=0600,dir_mode=0700,vers=3.0
+```
+
+Dauerhaft in `/etc/fstab` (uid/gid des angemeldeten Benutzers eintragen):
+
+```
+//nas02.example/technik  /mnt/pki  cifs  credentials=/etc/cifs-pki.cred,uid=1000,gid=1000,file_mode=0600,dir_mode=0700,vers=3.0,_netdev,nofail  0  0
+```
+
+Danach in Certana `/mnt/pki/SSL_certificates/SiriusCA/certana.db` öffnen. Auf jedem Arbeitsplatz denselben Mountpunkt verwenden, weil Export- und CRL-Verzeichnis in der Datenbank gespeichert sind.

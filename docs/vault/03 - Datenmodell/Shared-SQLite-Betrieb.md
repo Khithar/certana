@@ -18,6 +18,7 @@ SQLite-WAL funktioniert nicht über Netzwerkdateisysteme (Shared-Memory-Index), 
 | Lock-Datei älter als 10 min, oder gleicher Host und Prozess tot | gilt als verwaist, wird übernommen |
 | Heartbeat | Der Halter schreibt die Lock-Datei alle 2 min neu (`lock::REFRESH_EVERY`, eigener Thread im `LockGuard`). Findet er dabei eine fremde Identität vor (Rechner war > 10 min im Ruhezustand), setzt er `lock_lost`; `ensure_writable` lehnt danach alle Schreibzugriffe ab, `OpenInfo.lock_lost` zeigt es im UI, Neu-Öffnen behebt es. |
 | Guard-Drop | löscht die Lock-Datei nur, wenn sie noch die eigene Identität trägt |
+| **gvfs-Mount** (`fuse.gvfsd-fuse`, Pfad `/run/user/<uid>/gvfs/smb-share:…`, entsteht durch «Mit Server verbinden» in Nemo/Nautilus) | `Database::open` **verweigert** mit klarer Meldung; die Datenbank-Karte sperrt den Öffnen-Button. Befund 2026-10-20 per strace: `pwrite64` auf die DB-Datei liefert `EOPNOTSUPP`, die gvfs-FUSE-Schicht kann keine wahlfreien Schreibzugriffe. Die Freigabe muss per cifs/nfs-Kernel-Mount eingebunden werden, siehe [[06 - Betrieb/Installation#Mehrere Benutzer (Freigabe)]]. |
 
 Implementiert in `db/mod.rs` (`Database::open`, `info()`, `ensure_writable`), `db/lock.rs` (JSON-Lock, `STALE_AFTER` = 10 min, `acquire_with` für Tests mit kurzem Intervall) und `db/fs.rs`. Unter Windows/macOS gilt nur ein UNC-Pfad als Netzfreigabe; gemappte Laufwerksbuchstaben müssen über «Als geteilte Datenbank behandeln» markiert werden.
 
