@@ -24,6 +24,9 @@ All notable changes to Certana are documented here. Format follows Keep a Change
 - A database on a gvfs mount (file manager «Connect to server», `/run/user/…/gvfs/…`) failed with «disk I/O
   error» or «unable to open database file» because gvfs rejects random-access writes. Certana now refuses such
   paths with an explanation; mount the share with cifs/nfs instead.
+- A database on a Linux cifs mount without the `nobrl` option failed every write with «database is locked»
+  (SQLite's locks collide with the server's mandatory byte-range locks). Certana now checks the mount options
+  before opening and explains the missing option.
 
 ## [1.0.1] - 2026-10-15
 

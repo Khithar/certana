@@ -20,6 +20,7 @@ macro_rules! all_commands {
             $crate::commands::app::app_info,
             $crate::commands::files::read_text_file,
             $crate::commands::db::db_default_path,
+            $crate::commands::db::db_check_path,
             $crate::commands::db::db_open,
             $crate::commands::db::db_info,
             $crate::commands::db::db_close,

@@ -4,7 +4,7 @@ import { openUrl } from "@tauri-apps/plugin-opener";
 import { useTranslation } from "react-i18next";
 import { api } from "@/api";
 import { SETTING_KEYS } from "@/api/types";
-import type { AppInfo } from "@/api/types";
+import type { AppInfo, StorageIssue } from "@/api/types";
 import { THEMES, getTheme, setTheme, type Theme } from "@/lib/theme";
 import { pickDirectory, pickFile, pickSavePath } from "@/api/dialogs";
 import { useApp, useCommand } from "@/context/AppContext";
@@ -34,9 +34,15 @@ function DatabaseCard() {
     else if (lastDbPath) setPath(lastDbPath);
     else void api.dbDefaultPath().then(setPath);
   }, [db, lastDbPath]);
-  // GNOME/gvfs mounts (file manager «Connect to server») reject random-access writes; the backend
-  // refuses them too, this just explains it before the user tries.
-  const isGvfs = /\/gvfs\//.test(path);
+  // Mounts SQLite cannot work on (gvfs, cifs without nobrl): the backend refuses them too, this
+  // explains it in the user's language before they try.
+  const [issue, setIssue] = useState<StorageIssue | null>(null);
+  useEffect(() => {
+    if (!path) { setIssue(null); return; }
+    let live = true;
+    const id = setTimeout(() => void api.dbCheckPath(path).then((r) => { if (live) setIssue(r); }).catch(() => { if (live) setIssue(null); }), 300);
+    return () => { live = false; clearTimeout(id); };
+  }, [path]);
 
   const choose = async () => {
     const p = await pickSavePath(t("db.choose"), path, [{ name: "SQLite", extensions: ["db"] }]);
@@ -69,9 +75,9 @@ function DatabaseCard() {
           </div>
         </Field>
         <Checkbox label={t("db.forceShared")} checked={forceShared} onChange={setForceShared} />
-        {isGvfs && <Alert tone="error" title={t("db.gvfsTitle")}>{t("db.gvfsHint")}</Alert>}
+        {issue && <Alert tone="error" title={t("db.issueTitle")}>{t(`db.issue.${issue}`)}</Alert>}
         <div className="flex flex-wrap gap-2">
-          <Button loading={busy} disabled={isGvfs} onClick={() => run(() => openDb(path, forceShared))}>{db ? t("db.switch") : t("db.open")}</Button>
+          <Button loading={busy} disabled={!!issue} onClick={() => run(() => openDb(path, forceShared))}>{db ? t("db.switch") : t("db.open")}</Button>
           {db && <Button variant="outline" onClick={() => run(closeDb)}>{t("db.close")}</Button>}
           {db && <Button variant="outline" onClick={backup}>{t("db.backup")}</Button>}
         </div>

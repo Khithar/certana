@@ -34,6 +34,7 @@ fn command_flow() {
     let p = |n: &str| dir.path().join(n).display().to_string();
 
     // --- database
+    assert_eq!(db_check_path(p("certana.db")).unwrap(), None);
     let info = db_open(state.clone(), Some(p("certana.db")), None).unwrap();
     assert!(!info.read_only);
     settings_set(

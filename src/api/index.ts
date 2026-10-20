@@ -10,6 +10,7 @@ export const api = {
   appInfo: () => call<T.AppInfo>("app_info"),
 
   dbDefaultPath: () => call<string>("db_default_path"),
+  dbCheckPath: (path: string) => call<T.StorageIssue | null>("db_check_path", { path }),
   dbOpen: (path: string | null, forceShared = false) => call<T.OpenInfo>("db_open", { path, forceShared }),
   dbInfo: () => call<T.OpenInfo | null>("db_info"),
   dbClose: () => call<void>("db_close"),

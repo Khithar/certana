@@ -1,7 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-//! Detect whether a path lives on a network file system (where SQLite WAL must not be used).
+//! Detect what kind of file system a database path lives on: network mounts (where SQLite WAL
+//! must not be used) and mounts SQLite cannot work on at all.
 
 use std::path::Path;
+
+use serde::{Deserialize, Serialize};
 
 const NETWORK_FS: &[&str] = &[
     "cifs",
@@ -23,12 +26,43 @@ const NETWORK_FS: &[&str] = &[
 /// reject random-access writes (`pwrite` → EOPNOTSUPP), so SQLite cannot run on them at all.
 const GVFS_FS: &str = "fuse.gvfsd-fuse";
 
+/// A mount SQLite is known not to work on. `Database::open` refuses these with an explanation.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum StorageIssue {
+    /// gvfs FUSE mount: no random-access writes.
+    Gvfs,
+    /// Linux cifs mount without `nobrl`: SQLite's byte-range locks are sent to the server as
+    /// mandatory locks and collide with its own reads, every write ends in «database is locked».
+    CifsWithoutNobrl,
+}
+
+impl StorageIssue {
+    pub fn explain(self, path: &Path) -> String {
+        match self {
+            StorageIssue::Gvfs => format!(
+                "{} lies on a gvfs mount (file manager «Connect to server»), which does not support \
+                 random-access writes; SQLite cannot work there. Mount the share with cifs or nfs \
+                 (e.g. via /etc/fstab) and open the database from that mount point.",
+                path.display()
+            ),
+            StorageIssue::CifsWithoutNobrl => format!(
+                "{} lies on a cifs mount without the «nobrl» option; SQLite's locks collide with \
+                 the server's mandatory byte-range locks and every write fails with «database is \
+                 locked». Remount the share with «-o …,nobrl» (Certana guards the file with its own \
+                 lock file, so no byte-range locks are needed).",
+                path.display()
+            ),
+        }
+    }
+}
+
 /// Linux: longest-prefix match of the canonical path against `/proc/mounts`.
 /// Other platforms: UNC paths (`\\server\share`) count as network, everything else as local.
 pub fn is_network_path(path: &Path) -> bool {
     #[cfg(target_os = "linux")]
     {
-        mount_fstype_of(path).is_some_and(|fstype| is_network_fstype(&fstype))
+        mount_entry_of(path).is_some_and(|(fstype, _)| is_network_fstype(&fstype))
     }
     #[cfg(not(target_os = "linux"))]
     {
@@ -36,24 +70,36 @@ pub fn is_network_path(path: &Path) -> bool {
     }
 }
 
-/// Whether the path lives on a gvfs FUSE mount, which SQLite cannot write to.
-pub fn is_gvfs_path(path: &Path) -> bool {
+/// Whether the path lives on a mount SQLite cannot work on.
+pub fn storage_issue(path: &Path) -> Option<StorageIssue> {
     #[cfg(target_os = "linux")]
     {
-        mount_fstype_of(path).is_some_and(|fstype| fstype.eq_ignore_ascii_case(GVFS_FS))
+        mount_entry_of(path).and_then(|(fstype, options)| issue_for(&fstype, &options))
     }
     #[cfg(not(target_os = "linux"))]
     {
         let _ = path;
-        false
+        None
     }
 }
 
+fn issue_for(fstype: &str, options: &str) -> Option<StorageIssue> {
+    if fstype.eq_ignore_ascii_case(GVFS_FS) {
+        return Some(StorageIssue::Gvfs);
+    }
+    if (fstype.eq_ignore_ascii_case("cifs") || fstype.eq_ignore_ascii_case("smb3"))
+        && !options.split(',').any(|o| o == "nobrl")
+    {
+        return Some(StorageIssue::CifsWithoutNobrl);
+    }
+    None
+}
+
 #[cfg(target_os = "linux")]
-fn mount_fstype_of(path: &Path) -> Option<String> {
+fn mount_entry_of(path: &Path) -> Option<(String, String)> {
     let mounts = std::fs::read_to_string("/proc/mounts").ok()?;
     let canonical = existing_ancestor(path).canonicalize().ok()?;
-    mount_fstype(&mounts, &canonical).map(str::to_owned)
+    mount_entry(&mounts, &canonical).map(|(f, o)| (f.to_owned(), o.to_owned()))
 }
 
 fn is_network_fstype(fstype: &str) -> bool {
@@ -72,63 +118,64 @@ fn existing_ancestor(path: &Path) -> std::path::PathBuf {
     p
 }
 
-#[cfg(test)]
-fn is_network_in_mounts(mounts: &str, canonical: &Path) -> bool {
-    mount_fstype(mounts, canonical).is_some_and(is_network_fstype)
-}
-
-/// File-system type of the mount holding `canonical` (longest matching mount point).
-fn mount_fstype<'a>(mounts: &'a str, canonical: &Path) -> Option<&'a str> {
+/// File-system type and mount options of the mount holding `canonical` (longest matching
+/// mount point), parsed from `/proc/mounts` content.
+fn mount_entry<'a>(mounts: &'a str, canonical: &Path) -> Option<(&'a str, &'a str)> {
     let path_str = canonical.to_string_lossy();
-    let mut best: Option<(usize, &str)> = None;
+    let mut best: Option<(usize, &str, &str)> = None;
     for line in mounts.lines() {
         let mut parts = line.split_whitespace();
-        let (Some(_dev), Some(mount), Some(fstype)) = (parts.next(), parts.next(), parts.next())
+        let (Some(_dev), Some(mount), Some(fstype), Some(options)) =
+            (parts.next(), parts.next(), parts.next(), parts.next())
         else {
             continue;
         };
         let mount = mount.replace("\\040", " ");
         let matches =
             mount == "/" || path_str == mount || path_str.starts_with(&format!("{mount}/"));
-        if matches && best.map(|(len, _)| mount.len() >= len).unwrap_or(true) {
-            let _ = best.insert((mount.len(), fstype));
+        if matches && best.map(|(len, _, _)| mount.len() >= len).unwrap_or(true) {
+            let _ = best.insert((mount.len(), fstype, options));
         }
     }
-    best.map(|(_, fstype)| fstype)
+    best.map(|(_, fstype, options)| (fstype, options))
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
 
-    const MOUNTS: &str = "/dev/sda1 / ext4 rw 0 0\n//nas/share /mnt/nas cifs rw 0 0\nserver:/export /mnt/nfs nfs4 rw 0 0\n/dev/sdb1 /mnt/nasty\\040dir ext4 rw 0 0\ngvfsd-fuse /run/user/1000/gvfs fuse.gvfsd-fuse rw 0 0\n";
+    const MOUNTS: &str = "/dev/sda1 / ext4 rw 0 0\n//nas/share /mnt/nas cifs rw,vers=3.0 0 0\n//nas/ok /mnt/nas-ok cifs rw,vers=3.0,nobrl 0 0\nserver:/export /mnt/nfs nfs4 rw 0 0\n/dev/sdb1 /mnt/nasty\\040dir ext4 rw 0 0\ngvfsd-fuse /run/user/1000/gvfs fuse.gvfsd-fuse rw 0 0\n";
 
-    #[test]
-    fn gvfs_is_recognised_as_network_and_as_gvfs() {
-        let p = Path::new("/run/user/1000/gvfs/smb-share:server=nas,share=x/dir/certana.db");
-        assert!(is_network_in_mounts(MOUNTS, p));
-        assert_eq!(mount_fstype(MOUNTS, p), Some(GVFS_FS));
-        assert_eq!(mount_fstype(MOUNTS, Path::new("/mnt/nas/a.db")), Some("cifs"));
+    fn network(p: &str) -> bool {
+        mount_entry(MOUNTS, Path::new(p)).is_some_and(|(f, _)| is_network_fstype(f))
+    }
+
+    fn issue(p: &str) -> Option<StorageIssue> {
+        mount_entry(MOUNTS, Path::new(p)).and_then(|(f, o)| issue_for(f, o))
     }
 
     #[test]
     fn detects_network_mounts_by_longest_prefix() {
-        assert!(is_network_in_mounts(
-            MOUNTS,
-            Path::new("/mnt/nas/certana.db")
-        ));
-        assert!(is_network_in_mounts(MOUNTS, Path::new("/mnt/nfs/x/y.db")));
-        assert!(!is_network_in_mounts(
-            MOUNTS,
-            Path::new("/home/u/certana.db")
-        ));
-        assert!(!is_network_in_mounts(
-            MOUNTS,
-            Path::new("/mnt/nasty dir/certana.db")
-        ));
-        assert!(!is_network_in_mounts(
-            MOUNTS,
-            Path::new("/mnt/nas2/certana.db")
-        ));
+        assert!(network("/mnt/nas/certana.db"));
+        assert!(network("/mnt/nfs/x/y.db"));
+        assert!(!network("/home/u/certana.db"));
+        assert!(!network("/mnt/nasty dir/certana.db"));
+        assert!(!network("/mnt/nas2/certana.db"));
+    }
+
+    #[test]
+    fn gvfs_and_cifs_without_nobrl_are_issues() {
+        assert!(network("/run/user/1000/gvfs/smb-share:server=nas,share=x/certana.db"));
+        assert_eq!(
+            issue("/run/user/1000/gvfs/smb-share:server=nas,share=x/certana.db"),
+            Some(StorageIssue::Gvfs)
+        );
+        assert_eq!(
+            issue("/mnt/nas/certana.db"),
+            Some(StorageIssue::CifsWithoutNobrl)
+        );
+        assert_eq!(issue("/mnt/nas-ok/certana.db"), None);
+        assert_eq!(issue("/mnt/nfs/certana.db"), None);
+        assert_eq!(issue("/home/u/certana.db"), None);
     }
 }

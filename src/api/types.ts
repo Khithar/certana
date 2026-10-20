@@ -33,6 +33,9 @@ export const emptySubject = (): Subject => ({ common_name: "", organization: "",
 
 export interface AppInfo { name: string; version: string; license: string; repository: string }
 
+/** A mount SQLite cannot work on; `db_open` refuses these. */
+export type StorageIssue = "gvfs" | "cifs-without-nobrl";
+
 export interface OpenInfo {
   path: string;
   mode: "local" | "shared";

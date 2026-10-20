@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
+use certana_core::db::fs::StorageIssue;
 use certana_core::db::{Database, OpenInfo, OpenOptions};
 use tauri::State;
 
@@ -10,6 +11,15 @@ pub fn db_default_path() -> String {
     certana_core::config::default_db_path()
         .to_string_lossy()
         .into_owned()
+}
+
+/// Whether `path` lies on a mount SQLite cannot work on (gvfs, cifs without `nobrl`). The UI asks
+/// before opening so it can show a translated explanation instead of a cryptic SQLite error.
+#[tauri::command]
+pub fn db_check_path(path: String) -> CmdResult<Option<StorageIssue>> {
+    Ok(certana_core::db::fs::storage_issue(std::path::Path::new(
+        &path,
+    )))
 }
 
 #[tauri::command]

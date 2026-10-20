@@ -52,13 +52,15 @@ Beispiel SMB unter Linux Mint:
 sudo apt install cifs-utils
 sudo mkdir -p /mnt/pki
 sudo install -m 600 /dev/null /etc/cifs-pki.cred   # Inhalt: username=…, password=…, domain=…
-sudo mount -t cifs //nas02.example/technik /mnt/pki -o credentials=/etc/cifs-pki.cred,uid=$(id -u),gid=$(id -g),file_mode=0600,dir_mode=0700,vers=3.0
+sudo mount -t cifs //nas02.example/technik /mnt/pki -o credentials=/etc/cifs-pki.cred,uid=$(id -u),gid=$(id -g),file_mode=0600,dir_mode=0700,vers=3.0,nobrl
 ```
 
 Dauerhaft in `/etc/fstab` (uid/gid des angemeldeten Benutzers eintragen):
 
 ```
-//nas02.example/technik  /mnt/pki  cifs  credentials=/etc/cifs-pki.cred,uid=1000,gid=1000,file_mode=0600,dir_mode=0700,vers=3.0,_netdev,nofail  0  0
+//nas02.example/technik  /mnt/pki  cifs  credentials=/etc/cifs-pki.cred,uid=1000,gid=1000,file_mode=0600,dir_mode=0700,vers=3.0,nobrl,_netdev,nofail  0  0
 ```
+
+**`nobrl` ist Pflicht.** Ohne diese Option schickt der Linux-cifs-Client SQLites Dateisperren als zwingende Byte-Range-Locks an den Server; jeder Schreibzugriff endet nach 5 s mit «database is locked» (Befund 2026-10-20 auf nas02, bestätigt mit dem Demo-Flow: ohne `nobrl` Fehler, mit `nobrl` 49 s für Root, Issuing CA und neun Zertifikate). Certana prüft die Mount-Optionen beim Öffnen und meldet fehlendes `nobrl` sofort. Die Einzelschreiber-Garantie kommt aus Certanas Lock-Datei, nicht aus SQLite-Locks.
 
 Danach in Certana `/mnt/pki/SSL_certificates/SiriusCA/certana.db` öffnen. Auf jedem Arbeitsplatz denselben Mountpunkt verwenden, weil Export- und CRL-Verzeichnis in der Datenbank gespeichert sind.
