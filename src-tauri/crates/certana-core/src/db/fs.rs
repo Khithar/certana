@@ -165,7 +165,9 @@ mod tests {
 
     #[test]
     fn gvfs_and_cifs_without_nobrl_are_issues() {
-        assert!(network("/run/user/1000/gvfs/smb-share:server=nas,share=x/certana.db"));
+        assert!(network(
+            "/run/user/1000/gvfs/smb-share:server=nas,share=x/certana.db"
+        ));
         assert_eq!(
             issue("/run/user/1000/gvfs/smb-share:server=nas,share=x/certana.db"),
             Some(StorageIssue::Gvfs)

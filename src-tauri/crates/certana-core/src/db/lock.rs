@@ -9,9 +9,9 @@
 //! refuses further writes until it is reopened.
 
 use std::path::{Path, PathBuf};
+use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::mpsc::{self, RecvTimeoutError, Sender};
-use std::sync::Arc;
 use std::thread::JoinHandle;
 
 use serde::{Deserialize, Serialize};

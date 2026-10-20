@@ -40,7 +40,7 @@ npm install                                                   # Frontend-Deps
 npm run tauri dev                                             # App mit Hot-Reload
 cargo test --manifest-path src-tauri/Cargo.toml --workspace   # inkl. OpenSSL-Interop und Command-Flow
 cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings
-cargo fmt --manifest-path src-tauri/Cargo.toml
+cargo fmt --manifest-path src-tauri/Cargo.toml --all             # ohne --all wird certana-core nicht formatiert
 npm run lint && npx tsc --noEmit && npx vitest run
 npm run tauri build                                           # .deb/AppImage/.rpm → src-tauri/target/release/bundle/
 npm run release[:deb]                                         # Version hochzählen (scripts/bump-version.mjs) + Build
