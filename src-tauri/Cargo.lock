@@ -709,7 +709,7 @@ dependencies = [
 
 [[package]]
 name = "certana"
-version = "1.0.1"
+version = "1.0.2"
 dependencies = [
  "certana-core",
  "secrecy",
@@ -730,7 +730,7 @@ dependencies = [
 
 [[package]]
 name = "certana-core"
-version = "1.0.1"
+version = "1.0.2"
 dependencies = [
  "age",
  "argon2",
