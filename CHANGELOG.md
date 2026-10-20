@@ -4,6 +4,8 @@ All notable changes to Certana are documented here. Format follows Keep a Change
 
 ## [Unreleased]
 
+## [1.0.2] - 2026-10-20
+
 ### Added
 - Own application icon (white padlock on a red gradient), source in `packaging/icon/certana.svg`.
 - Database screen explains team use (shared database on SMB/NFS) and warns when the write lock was lost.
