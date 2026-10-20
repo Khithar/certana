@@ -6,6 +6,10 @@ All notable changes to Certana are documented here. Format follows Keep a Change
 
 ## [1.0.2] - 2026-10-20
 
+### Changed
+- Application identifier is now `io.github.khithar.certana` (was `io.github.certana`). The webview profile moves to
+  `~/.local/share/io.github.khithar.certana/`; the remembered database path has to be entered once more.
+
 ### Added
 - Own application icon (white padlock on a red gradient), source in `packaging/icon/certana.svg`.
 - Database screen explains team use (shared database on SMB/NFS) and warns when the write lock was lost.

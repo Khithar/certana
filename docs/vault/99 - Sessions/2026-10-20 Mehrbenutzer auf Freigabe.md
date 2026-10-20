@@ -20,6 +20,10 @@ tags: [session, datenmodell, betrieb]
 - Fix: `db::fs::is_gvfs_path` (Mount-Typ `fuse.gvfsd-fuse`), `Database::open` verweigert mit Hinweis auf cifs/nfs; Datenbank-Karte zeigt bei `/gvfs/`-Pfaden eine Fehlermeldung und sperrt «Öffnen». Test `gvfs_is_recognised_as_network_and_as_gvfs`. Installationsseite mit cifs-Mount- und fstab-Beispiel.
 - Zu bereinigen auf dem Share: `certana.db`, `certana.db-journal`, `certana.db.lock` und die Probe-Verzeichnisse `_probe`, `_probe2` (gvfs lieferte beim Löschen I/O-Fehler). Das Bundle `Sirius-Root-CA.certana-root` ist gültig, die Root ist aber nicht in der DB registriert; Zeremonie nach dem cifs-Mount wiederholen.
 
+## App-ID (gleiche Session)
+- Frage des Nutzers zum Ordner `~/.local/share/io.github.certana/`: das ist der Webview-Profilordner aus der Tauri-`identifier`. Zuerst `com.siriusag.certana` erwogen (Firma gehört dem Entwickler), nach Abwägung Entscheid für `io.github.khithar.certana`: persönliches GPL-Projekt, ID soll Firmenänderungen überdauern, Flathub-Nachweis über das Repo. ADR [[05 - Entscheidungen/2026-10-20-app-id-github]], Packaging-Dateien umbenannt, Metainfo mit `developer` Certana Contributors und Release-Einträgen 1.0.0–1.0.2, CHANGELOG.
+- Nebenbei: fstab-/Mount-Anleitung für die nas02-Shares (IPsec, `nofail`, `x-systemd.automount`) und Variante mit Passwortfenster beim Login (zenity + root-Helfer + sudoers, kein Passwort auf der Platte) im Scratchpad erstellt; nicht Teil des Repos.
+
 ## Offen
 - Praxistest auf einem cifs-Kernel-Mount mit zwei PCs (Mount-Optionen, Lese-Latenz, Lock-Datei-Sichtbarkeit).
 - Windows: gemappte Laufwerksbuchstaben werden nicht als Netzfreigabe erkannt (nur UNC); Workaround Checkbox «Als geteilte Datenbank behandeln».

@@ -23,7 +23,7 @@ chmod +x Certana_<version>_amd64.AppImage && ./Certana_<version>_amd64.AppImage
 
 ## Flatpak
 
-`flatpak install flathub io.github.certana.Certana` (sobald auf Flathub veröffentlicht).
+`flatpak install flathub io.github.khithar.Certana` (sobald auf Flathub veröffentlicht).
 
 ## Windows (optional)
 
@@ -37,8 +37,8 @@ chmod +x Certana_<version>_amd64.AppImage && ./Certana_<version>_amd64.AppImage
 
 - DB: `~/.local/share/certana/certana.db` (änderbar in den Einstellungen; Default per `CERTANA_DATA_DIR` verschiebbar).
 - Root-Bundle: frei gewählter Ort, empfohlen USB-Stick; **nicht** im DB-Ordner.
-- Zuletzt geöffneter DB-Pfad: `localStorage` des Webviews unter `~/.local/share/io.github.certana/`.
-- Neustart «from scratch»: App beenden, `~/.local/share/certana` und das Root-Bundle löschen (optional `~/.local/share/io.github.certana`).
+- Zuletzt geöffneter DB-Pfad: `localStorage` des Webviews unter `~/.local/share/io.github.khithar.certana/`.
+- Neustart «from scratch»: App beenden, `~/.local/share/certana` und das Root-Bundle löschen (optional `~/.local/share/io.github.khithar.certana`).
 
 ## Mehrere Benutzer (Freigabe)
 

@@ -14,6 +14,6 @@ Zurück zum [[00 - Index]].
 4. Draft prüfen, `.deb` auf Mint testen (Installation, Startmenü, Deinstallation), Release veröffentlichen.
 5. Flatpak-Manifest aktualisieren und Flathub-PR stellen.
 
-Workflows: `.github/workflows/ci.yml` (fmt, clippy, test, cargo-deny, Frontend lint/typecheck/build) und `release.yml`. Lizenz-Policy in `src-tauri/deny.toml`. Flatpak: `packaging/flatpak/io.github.certana.Certana.yml` + `packaging/io.github.certana.Certana.metainfo.xml`.
+Workflows: `.github/workflows/ci.yml` (fmt, clippy, test, cargo-deny, Frontend lint/typecheck/build) und `release.yml`. Lizenz-Policy in `src-tauri/deny.toml`. Flatpak: `packaging/flatpak/io.github.khithar.Certana.yml` + `packaging/io.github.khithar.Certana.metainfo.xml`.
 
 Secrets in GitHub: `TAURI_SIGNING_PRIVATE_KEY`, `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` (Updater-Artefakte), `GPG_PRIVATE_KEY`, `GPG_PASSPHRASE`.

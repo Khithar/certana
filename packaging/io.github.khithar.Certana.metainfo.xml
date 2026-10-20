@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <component type="desktop-application">
-  <id>io.github.certana.Certana</id>
+  <id>io.github.khithar.Certana</id>
   <name>Certana</name>
   <summary>Internal certificate authority for your own infrastructure</summary>
   <metadata_license>CC0-1.0</metadata_license>
   <project_license>GPL-3.0-or-later</project_license>
+  <developer id="io.github.khithar"><name>Certana Contributors</name></developer>
   <description>
     <p>Certana runs an internal certificate authority on your desktop: an offline root CA kept in an encrypted bundle, an issuing CA for daily work, a wizard for Apache/nginx server certificates as well as client, S/MIME and code-signing certificates, revocation with CRL export and expiry monitoring.</p>
   </description>
@@ -13,6 +14,8 @@
   <url type="bugtracker">https://github.com/Khithar/certana/issues</url>
   <content_rating type="oars-1.1" />
   <releases>
-    <release version="0.1.0" date="2026-10-15" />
+    <release version="1.0.2" date="2026-10-20" />
+    <release version="1.0.1" date="2026-10-15" />
+    <release version="1.0.0" date="2026-10-15" />
   </releases>
 </component>

@@ -1,7 +1,7 @@
 # Flatpak manifest (Flathub submission). Build offline sources first:
 #   python3 flatpak-cargo-generator.py src-tauri/Cargo.lock -o cargo-sources.json
 #   flatpak-node-generator npm package-lock.json -o node-sources.json
-app-id: io.github.certana.Certana
+app-id: io.github.khithar.Certana
 runtime: org.gnome.Platform
 runtime-version: "49"
 sdk: org.gnome.Sdk
@@ -32,7 +32,7 @@ modules:
       - npm run tauri build -- --bundles deb
       - ar -x src-tauri/target/release/bundle/deb/*.deb
       - tar -xf data.tar.gz -C /app --strip-components=1 ./usr
-      - install -Dm644 packaging/io.github.certana.Certana.metainfo.xml /app/share/metainfo/io.github.certana.Certana.metainfo.xml
+      - install -Dm644 packaging/io.github.khithar.Certana.metainfo.xml /app/share/metainfo/io.github.khithar.Certana.metainfo.xml
     sources:
       - type: dir
         path: ../..

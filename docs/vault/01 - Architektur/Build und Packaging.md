@@ -31,7 +31,7 @@ npm run bump -- minor            # nur Version erhöhen: patch | minor | major
 
 ## Bundle-Konfiguration (`src-tauri/tauri.conf.json`)
 
-- `productName: "Certana"`, `identifier: io.github.certana`, `bundle.category: "Utility"`.
+- `productName: "Certana"`, `identifier: io.github.khithar.certana`, `bundle.category: "Utility"`.
 - `.deb`: `section: utils`, eigenes `desktopTemplate` (`packaging/certana.desktop`) mit `Categories=Utility;Security;Network;` → Mint-Startmenü unter «Zubehör» und «Systemverwaltung».
 - Release-Profil: `lto`, `codegen-units=1`, `opt-level="s"`, `strip` → Binary 5–15 MB, `.deb` 3–10 MB.
 - AppImage bündelt GTK/WebKit (70–120 MB); auf `ubuntu-22.04` bauen (glibc).
